@@ -1,0 +1,610 @@
+\documentclass[]{StandardTemplate}
+\usepackage{agda}
+\usepackage[utf8]{inputenc}
+\newcommand{\red}{\longrightarrow}
+\title{\textsf{\color{darkred}{Representing \textsc{Agda} and Coinduction on the \\ $\boldsymbol  \lambda \boldsymbol \Pi $-calculus modulo rewriting}} }
+\usepackage{bussproofs}
+\usepackage{tikz-cd}
+\usepackage{stmaryrd}
+\usepackage{enumitem}
+\usepackage{bussproofs}
+\usepackage{titlesec}
+\newtheorem{claim}{Claim}
+\usepackage{xcolor}
+\usepackage{sfmath}
+
+% footnotes at the end of the document
+\usepackage{enotez}
+% by clicking on the number we get back to where the footnote was cited
+\setenotez{backref=true, list-name=, mark-format=\greensup}
+\DeclareInstance{enotez-list}{custom}{paragraph}
+{
+  heading   = ,
+  format    = \normalfont          ,
+  number    = \color{mygreen}{\textsuperscript{#1}},
+}
+\newcommand{\greensup}[1]{\color{mygreen}{\textsuperscript{#1}}}
+
+
+\usepackage[title]{appendix}
+\usepackage[scope, paper]{knowledge} % default
+\usepackage[top=1cm, bottom=1.5cm, outer=0.7cm, inner=0.7cm, heightrounded, marginparwidth=3.2cm, marginparsep=0.5cm]{geometry}
+\knowledgeconfigure{notion}
+
+% The 'quotation' configuration is commonly used and triggers the "..." notation.
+\knowledgeconfigure{quotation}
+\knowledgeconfigure{protect quotation=tikzcd}
+%\renewcommand{\bibsection}{\section{\refname}}
+
+\newcommand{\redbold}[1]{\textbf{\textsf{\color{darkred}{#1}}}}
+\newcommand{\ct}[1]{\textcolor{darkblue}{#1}}
+\usepackage{etoolbox}
+\patchcmd{\thebibliography}{\section*{\refname}}{}{}{}
+
+\makeatletter
+\newcommand{\globalcolor}[1]{%
+  \color{#1}\global\let\default@color\current@color
+}
+\makeatother
+\definecolor{mygreen}{RGB}{0, 120, 0} 
+\definecolor{darkgray}{RGB}{27,27,27}
+ \definecolor{darkblue}{RGB}{0,30,170}
+%\definecolor{darkblue}{RGB}{20,140,0}
+\AtBeginDocument{\globalcolor{darkgray}}
+
+\definecolor{mygray}{RGB}{100, 100, 100}
+\definecolor{darkred}{RGB}{120, 29, 29} 
+\newcommand{\Type}{\textbf{Type}}
+\newcommand{\Kind}{\textbf{Kind}}
+\newcommand{\Set}{\textbf{Set}}
+\newcommand{\Agda}{\textsc{Agda} }
+\newcommand{\Prop}{\textbf{Prop}}
+\newcommand{\N}{\mathbb{N}}
+\DeclareMathAlphabet\mathbfcal{OMS}{cmsy}{b}{n}
+\newcommand{\gray}[1]{\textcolor{mygray}{#1}}
+
+\newcommand{\margincom}[1]{% a simple margin note
+        \refstepcounter{margincount}% step counter
+        \textsuperscript{\themargincount}% the number (superscript) in text preceded by m
+        \marginpar{\vspace{-2em}\footnotesize \textsuperscript{\themargincount}\gray{#1}}}
+\newcounter{margincount}
+\usepackage{sectsty}
+
+\chapterfont{\color{blue} }  % sets colour of chapters
+\sectionfont{\color{darkred} \sffamily}  % sets colour of sections
+\subsectionfont{\color{darkred} \sffamily}  % sets colour of sections
+\subsubsectionfont{\color{darkred} \sffamily}  % sets colour of sections
+
+
+\knowledge{\textit{Curry-Howard}}{notion}
+\knowledge{Curry-Howard}{synonym}
+\knowledge{propositions as types}{synonym}
+
+
+\knowledge{judgments as types}{notion}
+
+\usepackage{newunicodechar}
+\newunicodechar{λ}{\ensuremath{\mathnormal\lambda}}
+\newunicodechar{←}{\ensuremath{\mathnormal\from}}
+\newunicodechar{→}{\ensuremath{\mathnormal\to}}
+\newunicodechar{Σ}{\ensuremath{\mathnormal\Sigma}}
+\newunicodechar{∀}{\ensuremath{\mathnormal\forall}}
+
+\begin{document} 
+\maketitle
+
+
+
+\subsection*{General Context}
+\margincom{tetst. sf srsadas sds d}
+\subsection*{Problem Studied}
+
+\subsection*{Proposed Contributions}
+\margincom{tetst. sf srsadas sds d}
+\subsection*{Arguments Supporting Their Validity}
+
+\subsection*{Summary and Future Work}
+
+\subsection*{Acknowledgements}
+
+
+\newpage
+
+\section{Introduction}
+\label{sec:intro}
+
+\redbold{The problem of proof interoperability}
+
+TODO: more direct introduction, talk about why translate agda and coinduction is important. remove section introduction and put everything on the fiche de synthese. 
+
+In light of the ""\textit{Curry-Howard}"" correspondence -- also known as the "propositions as types" correspondence~-- we experience an emergence of a technology which is leading us into a new era of mathematics. Proof assistants, which put simply are programming languages for proving, are increasingly being used on the development and verification of formal proofs. 20 years after its original failure, we are finally getting closer to the objectives of the QED manifesto, of building a mathematical library of automatically checked proofs.
+
+For instance, 97\% of the famous The Hundred Greatest Theorems list has already been formalized in some proof assistant. However, many of these theorems are only available in a some systems, and a user wanting to use the result on a different one has no option other then redoing the proof, a very time and resource demanding task.
+
+Quite naturally, the already well known problem of interoperability of programs is transported by the Curry-Howard correspondence to a problem of interoperability of proofs. However, this question is even amplified: proof assistants, being used as logics, need a much intricate set of features, such as complex type systems, inductive types, 
+
+
+Therefore, this question is arguably one of the central ones when 
+\newpage
+\section{Background}
+\label{sec:sart}
+
+In this section we present the theory on top of which we build our contribution. We start by presenting the $ \lambda \Pi $-calculus modulo rewriting (or $ \lambda \Pi /\mathcal{R} $-calculus), a logical framework developed and used at Deducteam for expressing logics and checking their proofs. This is followed by a look at coinduction and coinductive types. We then present the proof assistant \Agda and detail some particularities of its type system. Finally, we review \textit{Agda2Dedukti}, a prototype translator for \Agda proofs developed by Guillaume Genestier and we detail which of the features of the proof assistant it is able to translate.
+
+
+\subsection{The $\boldsymbol  \lambda \boldsymbol \Pi $-calculus modulo rewriting}
+\label{sec:dedukti}
+
+
+\redbold{Starting point: a $ \boldsymbol \lambda $-calculus with dependent types}
+
+
+The lambda-calculus with dependent types, or $ \lambda\Pi $-calculus, was proposed by \cite{ELF} as a logical framework in which many proof and type systems can be expressed. Its syntax is given by 
+\[
+A, B, M, N ::= x \in \mathcal{X}~|~c \in \mathcal{C}~|~\Type~|~\Kind~|~M N~|~\lambda x : A . M~|~\Pi x : A. B
+\]
+where $ \mathcal{C} $ is an infinite set of constants and $ \mathcal{X} $ is an infinite set of variables. We denote $ \Lambda_{\lambda \Pi} $ the set of terms generated by this grammar. Conversion is defined as usual by $ \beta $-equivalence, and we write $ \Pi x:A.B $ as $ A \to B $ when $ x $ does not appear in B.
+
+A \textit{context} $ \Gamma $ is a finite set of pairs $ x : A $, where $ x $ is a variable and $ A \in \Lambda_{\lambda \Pi}$, such that any variable can only appear once. A \textit{signature} $ \Sigma $ is a finite set of pairs $ c : A $, where $ c $ is a constant, $ A \in \Lambda_{\lambda \Pi}$ and every constant can only appear once. We write constants which compose the signature $ \Sigma $ in \ct{blue}, as they will be much used when declaring encodings or theories. Typing on the $ \lambda \Pi $-calculus is defined through judgements of the form $ \Sigma; \Gamma \vdash M : A $, for $ M, A \in \Lambda_{\lambda \Pi} $. We refer to the appendix A for the typing rules.
+
+Intuitively, the type system can be separated into type objects (terms typed by $ \Type $) and element objects (terms typed by a type object). $ \Type $ is the type of all the object types, whereas $ \Kind $ is there mostly for ``administrative'' reasons\endnote{Its only use is to give a type to $ \Type $ and to type families (types of the form $ A_1 \to A_2 \to ... \to \Type$)}. For instance, if we want to have a symbol $ \ct{\N} $ to represent natural numbers and a constant $ \ct{0} $ to represent the number zero, the only way to have $ \ct{0} : \ct{\N} $ is by declaring $ \ct{\N} : \Type $. Now suppose we had a type $ \ct{type} : \Type $ of small types and $ \ct{\N} : \ct{type} $. Now we cannot declare $ \ct{0} : \ct{\N}$ because $ \ct{\N} : \ct{type}$ is an element object, and thus cannot type another term.
+
+
+As the name says, the particularity of the $ \lambda \Pi $-calculus when comparing with the $ \lambda $-calculus is the addition of dependent types\endnote{More precisely, the addition of dependent types only renders the system more expressive because we are also allowed to have type families, otherwise it would be always possible to replace any $ \Pi x: A. B $ by $ A \to B $.}. For instance, consider the successor function $ \ct{S} : \ct{\N} \to \ct{\N}$. For any element $ n : \ct{\N} $, the application $ \ct{S} n $ always gives a term that lives in $ \ct{\N} $. However, if we consider the equality type for natural numbers $ \ct{=}: \ct{\N} \to \ct{\N} \to \Type$ (written infix) and we consider a function $ \ct{refl} : \Pi n : \ct{\N}. n \ct{=} n $ giving a proof of $ n \ct{=} n $ for every $ n $, then for each element $ n $ the application $ \ct{refl}~n $ lives on a different type. Indeed, $ \ct{refl~0}$ is of type $ \ct{0 = 0} $ but not of type $ \ct{1=1}$, because it is not a proof of $ 1=1 $. This is because the term $ \ct{refl} $ has a type which is dependent: its codomain depends on the argument given.
+
+To resume things, we can give the following characterization of the hierarchy of the types in the $ \lambda \Pi $-calculus.
+
+
+\begin{center}
+  \begin{tikzcd}[row sep=0.2cm]
+    \text{Element objects} & \text{Type objects} & \text{Type and type families} & \text{Kind} \\
+    \ct{0}, \ct{1},\ct{2}... \arrow[r, dotted, ":"] & \ct{\N} \arrow[r, dotted, ":"] & \Type  \arrow[r, dotted, ":"] & \Kind \\
+    \ct{refl} \arrow[r, dotted, ":"] & \Pi n : \ct{\N}. n \ct{=} n \arrow[ur, dotted, ":"] & & \\    
+    
+    \ct{true}, \ct{false} \arrow[r, dotted, ":"] & \ct{Bool} \arrow[uur, dotted, ":"] & & \\
+    & = \arrow[r, dotted, ":"] &  \ct{\N} \to \ct{\N} \to \Type  \arrow[uuur, dotted, ":"]  & \\
+\end{tikzcd}
+\end{center}
+
+\redbold{The $ \lambda \Pi $-calculus as a logical framework}
+
+
+The $ \lambda \Pi $-calculus is well known for being in "propositions as types" correspondence with intuitionistic predicate logic\endnote{More precisely, with minimal intuitionistic predicate logic, that is, the fragment on intuitionistic predicate logic only featuring implication and universal quantification.}. Through the Curry-Howard correspondence, a proposition $ P $ is seen as a type $ P $ and the proofs of $ P $ are the inhabitants of this type. For instance, if $ P $ is a proposition, we represent the proof of $ P \Rightarrow P $ by $ \lambda x : P. x$.
+%For instance, consider the signature $ \Sigma $ containing $ D : \Type $, $ + : D \to D \to D $, $ = : D \to D \to \Type $, $ c : (\Pi x~y~z: D.(x + y) + z = x + (y + z)) $. Then, if $ P $ is a proposition on the (minimal) first order language of semi-groups, it is an intuitionistic tautology iff there is a term $ M \in \Lambda_{\lambda \Pi} $ such that $ M $ is typed by $ \llbracket P \rrbracket $ under  $ \Sigma $, where $ \llbracket - \rrbracket $ is a translation replacing $ \Pi $ by $ \forall $.
+
+However, there is also a different approach to expressing predicate logic in the $ \lambda \Pi $-calculus, known as \textit{judgment as types}. Here, instead of representing a proposition directly as an inhabitant of $ \Type $, we declare a new type $ \ct{Prop} : \Type $ of propositions and a function $\ct{Proof} : \ct{Prop} \to \Type$ associating to each proposition a type of its proofs. We then add other constants to express each connective.\endnote{Such an encoding is also called deep, as implication and universal quantification is represented by new added constants, and not by the $ \Pi $ and the abstraction of the $ \lambda \Pi $-calculus. } For instance, to add implication we add the constant $ \ct{\Rightarrow}:\ct{Prop} \to \ct{Prop} \to \ct{Prop} $ (written infix) and the constants
+\begin{align*}
+  \ct{\Rightarrow_{in}} &: \Pi a~b : \ct{Prop}. (\ct{Proof}~a \to \ct{Proof}~b) \to \ct{Proof}~(a~\ct{\Rightarrow}~b)\\
+  \ct{\Rightarrow_{el}} &: \Pi a~b : \ct{Prop}. \ct{Proof}~a \to \ct{Proof}~(a~\ct{\Rightarrow}~b)\to \ct{Proof}~b \,.
+\end{align*}
+Therefore, whereas on the proposition as types approach we have that $ \lambda x : P.x $ is a proof of $ P \Rightarrow  P $, on the judgment as types this is expressed by the term $ \ct{\Rightarrow_{in}}~P~P~(\lambda x : P. x) $.
+
+The judgment as types approach was the one originally proposed by \cite{ELF} to be used with the $ \lambda \Pi $-calculus, when seeing it as a logical framework. Whereas the propositions as types puts this system in a ``canonical'' correspondence with predicate logic, when using the judgment as types approach we are able to encode many other system that are not in any correspondence to the $ \lambda \Pi $-calculus. Indeed, it turns out that by using this method  we are capable of representing many other type systems with feature that are orthogonal to those of the $ \lambda \Pi $-calculus, such as System F. This can seem very strange, as we are capable of expressing a system with polymorphism in a system without it.
+
+If we take another look at the encoding of predicate logic, we can see an important point we did not discuss. A proof of $ P \vdash P $ with a cut is represented through the Curry-Howard correspondence by $ (\lambda x : P. x) \alpha_P$ --- where $ \alpha_P $ represents the proof of $ P $ in the context ---, whereas through the judgment as types approach we get the term $ \ct{\Rightarrow_{el}}~P~P~\alpha_P~(\ct{\Rightarrow_{in}}~P~P~(\lambda x : P. x) )$. On the first case, we have $ (\lambda x : P. x) \alpha_P \red \alpha_P $ and thus the term reduces to the representation of the cut-free proof. However, by using the last approach we lose this computational behavior, as the term $ \ct{\Rightarrow_{el}}~P~P~\alpha_P~(\ct{\Rightarrow_{in}}~P~P~(\lambda x : P. x) )$ is stuck and cuts do not reduce anymore.
+
+As pointed out by Assaf\cite{assaf}, encodings such as this one, which lack the preservation of computation, fail to be sound for more higher-order systems, such as the Calculus of Constructions. Thus, even though we are capable of encoding systems such as predicate logic and System F in a sound and complete way, the rigidity of the computation on the $ \lambda \Pi $-calculus prevents us from going further.
+
+
+\redbold{Enriching computation on the $ \lambda \Pi $-calculus}
+
+
+In 2007, Dowek and Cousineau proposed an extension of the $ \lambda \Pi $-calculus in which the notion of computation can be extended by adding rewriting rules\cite{dowek2007}. The syntax and the typing rules are kept the same, however we consider a more general notion of equivalence than only $ \equiv_\beta $. More precisely, given a set $ \mathcal{R} $ of rewriting rules --- pairs of the form $ c M_1..M_k \red N $, where $ c $ is a constant and $ M_1,...,M_k,N \in \Lambda_{\lambda \Pi} $ ---, the relation $ \equiv $ on the $ \lambda \Pi / \mathcal{R} $-calculus is defined as the least equivalence relation containing $ \equiv_\beta $ and the context and substitution closure of the rules in $ \mathcal{R} $. 
+ 
+By addressing the poorness of computation on the $ \lambda \Pi $-calculus and adding the possibility of extending rewriting, the $ \lambda \Pi /\mathcal{R} $-calculus becomes capable of expressing much richer systems. In \cite{dowek2007}, Dowek and Cousineau showed that we can express any functional PTS in a sound and complete way, which was already not possible on the $ \lambda \Pi $-calculus. Since then, researchers at Deducteam have built on top of this work and proposed encoding of much richer features on the $ \lambda \Pi /\mathcal{R} $-calculus, like inductive types\cite{dedukti}, universe polymorphism\cite{guillaume}, cumulativity\cite{assaf}\cite{thire}, proof-irrelevance\cite{proofIrel}, etc. 
+
+\redbold{Expressing logics on the $ \lambda \Pi $-calculus modulo rewriting}
+
+Let's now take a second try at doing a judgment as types encoding of predicate logic, but now using rewrite rules. On the $ \lambda \Pi $-calculus, we declared a constant $ \ct{\Rightarrow} $ to represent implication and we had to declare constants $ \ct{\Rightarrow_{in}} $ and $ \ct{\Rightarrow_{el}} $ to represent the introduction and elimination rules for this connective. However, a much nicer approach is possible on the  $ \lambda \Pi / \mathcal{R} $-calculus: we can just declare a rewrite rule \[
+\ct{Proof}~(a~\ct{\Rightarrow}~b) \red \ct{Proof}~a \to \ct{Proof}~b
+\,.\]Now we don't need to declare constants for the introduction and elimination of implication, because these can be simulated by abstraction and application. For instance, a proof of $ P~\ct{\Rightarrow}~P $ can be simply given by the term $ \lambda x : \ct{Proof}~P. x $. We also recover the computational behavior: the representation of the proof of $ P \vdash P $ containing a cut is now given by $ (\lambda x : \ct{Proof}~P. x) \alpha_P $. We thus have $ (\lambda x : \ct{Proof}~P. x) \alpha_P \red \alpha_P$ and proofs with cuts now reduce to cut-free proofs.
+
+To have a better understanding of how such encodings work, let's have a full look at the representation of predicate logic. We already have declared
+\begin{align*}
+  &\ct{Prop} : \Type & \text{($\ct{Prop}$-decl)} \\
+  &\ct{Proof} : \ct{Prop} \to \Type & \text{($\ct{Proof}$-decl)} \\
+  &\ct{\Rightarrow} : \ct{Prop} \to \ct{Prop} \to \ct{Prop} & \text{($\ct{\Rightarrow}$-decl)} \\
+  &\ct{Proof}~(a~\ct{\Rightarrow}~b) \red \ct{Proof}~a \to \ct{Proof}~b& \text{($\ct{\Rightarrow}$-red)}
+\end{align*}
+which encodes the implicational fragment. To add first order quantification, we need to add a constant to represent the domain of discourse. If we want however to represent many-sorted predicate logic, in which we can have many sorts of domains of discourse, we can declare a type $ \ct{Set} : \Type $ which represent the set of sorts\endnote{The term \textit{sort} here means something else than the sorts of a type system.}. Now we can add multiple constants of type $ \ct{Set} $ to represent different sorts of the language. For this example we only declare $ \ct{\iota} : \ct{Set} $, which defines an one-sorted fragment of predicate logic. Finally, just like we had to declare a constant $ \ct{Proof} : \ct{Prop} \to \Type $ which gives to each proposition a type of its proofs, we also need to declare $  \ct{El} : \ct{\iota} \to \Type$, associating to each sort of the language a type of its elements.
+\begin{align*}
+  &\ct{Set} : \Type & \text{($\ct{Set}$-decl)} \\
+  &\ct{\iota} : \ct{Set} & \text{($\ct{\iota}$-decl)} \\  
+  &\ct{El} : \ct{Set} \to \Type & \text{($\ct{El}$-decl)} 
+\end{align*}
+Now, given a sort $ x $, we can declare universal quantification as a function which takes a term of type $ \ct{El}~x \to \ct{Prop} $ to a term $ \ct{Prop} $. More formally, we declare 
+\begin{align*}
+  &\ct{\forall} : \Pi x: \ct{Set}. (\ct{El}~x \to \ct{Prop}) \to \ct{Prop} & \text{($\ct{\forall}$-decl)}
+\end{align*}
+which allows us to represent $ \forall_\iota x. P $ by $ \ct{\forall}~\ct{\iota}~(\lambda x : \ct{El}~\ct{\iota}.P)$. Finally, to have the proper introduction,  elimination and computational behavior we add the rule
+\begin{align*}
+  &\ct{El}~(\ct{\forall}~A~P) \red \Pi x : \ct{El}~A. \ct{Proof}~(P~x) & \text{($\ct{\forall}$-red)}
+\end{align*}
+saying that an element of $ \ct{\forall}~A~P $ is simply a function taking an element of $ A $ and returning a proof of $ P~x $. We are finished and we can show that this set of constants and rewrite rules provides a sound and complete encoding of many-sorted (minimal intuitionistic) predicate logic.
+
+Actually, in \cite{thU} researchers at Deducteam proposed a theory, containing this one just presented, which is capable of expressing in a unified way many systems and logics in the $ \lambda \Pi /\mathcal{R} $-calculus, such as (intuitionistic and classic) predicate logic, higher order logic, the Calculus of Constructions, etc. We can thus see that the expressivity of the  $ \lambda \Pi /\mathcal{R} $-calculus makes it a very good candidate to be used as a logical framework and universal proof checker. 
+
+\redbold{Dedukti and Lambdapi: implementing the $ \lambda \Pi $-calculus modulo rewriting}
+
+Of course, if we want to use the $ \lambda \Pi /\mathcal{R} $-calculus as a practical logical framework, we need to have some real implementation of it. \textsc{Dedukti} and its newer brother \textsc{Lambdapi} are two implementations of this system, and are used in practice to represent and check proofs. Many translators to and from \textsc{Dedukti} have already been developed or are in development\cite{thire}\cite{sttfa}\cite{assaf}, and most notably the encyclopedia of formal proofs expressed in \textsc{Dedukti}  \textit{Logipedia}\cite{logipedia} is one of the main projects at Deducteam. 
+
+\section{Coinduction}
+\label{sec:coind}
+
+\redbold{A dual to induction}
+
+Inductive types are well known by most proof assistant users. By defining a type $ A $ and a set of constructors for $ A $ (satisfying a certain set of constraints, so we have a nice metatheory), the elements of the inductive type $ A $ are defined as the smallest set of terms stable by these constructors\endnote{This part only concerns \textit{canonical terms}, that is, closed terms in normal form. For instance, if we consider elements of $ \N $ closed but not in normal form we also have $ (\lambda x : \N. x)~0$ which does not fit this description. Likewise, if we consider elements of $ \N $ in normal form but not closed, we can have for instance a variable $ x $ of type $ \N $. However, by imposing those two constraints at the same time, we are assured (in systems which have the \textit{canonicity} property, which is a desirable metaproperty in most cases) that such elements of inductive types are indeed the least fixed points of the presented function.}. For instance, we can declare the types $ List~\N $ of lists of natural numbers, with constructors $ [] : List~\N $ for the empty list and $ (\_::\_) : \N \to List~\N \to List~\N $ for adding an element to a list. Then we declare the elements of $ List~\N $ as the smallest set of terms closed by these constructors, that is, the least fixed point of the function \[
+\phi: X \mapsto \{ []\} \cup \{ n::x \mid x \in X, n : \N\}\,,
+\]which can be described by $ \cup_i~\phi^i (\emptyset) $.These are exactly the terms that can be constructed by finitely applying the type's constructors and are exactly the lists of natural numbers.
+
+Like many objects in mathematics, inductive types have a form of dual, called coinductive types. By defining a type $ A $ and a set of constructors for $ A $, the elements of the coinductive type $ A $ are defined as the largest set of terms stable by these constructors. If now we interpret the same set of constructors for $ List~\N $ coinductively, we get the coinductive type $ Stream~\N $. Its elements form the largest set of terms closed by these constructors, that is, the greatest fixed point of \[
+\phi : X \mapsto \{ []\} \cup \{ n::x \mid x \in X, n : \N\}\,.
+\]which can be described by $ \cap_i~\phi^i (\Lambda) $, where $ \Lambda $ is the set of all terms.
+
+When we consider only finite terms, both sets of inductive and coinductive types collapse to the same one. However, if we allow for infinite terms, the set of elements of $ List~\N $ stays the same, but we now get new elements of the type $ Stream~\N $. For instance, the term $ 0 :: 0 :: 0... $ is stable by $ 0::\_ $ and thus it is an element of $ Stream~\N $.
+
+There is a very important point about this duality. If we analyze the equation $ List~\N =  \cup_i~\phi^i (\emptyset)$, this says that to construct the elements of $ List~\N $ we first start with the empty set and at each step we construct a new set of terms by adding the empty list and by applying $ n::\_ $ to previous terms. At the end we find exactly the terms which can be finitely (in at most $ i $ steps) built with these constructors.
+
+On the other hand, the equation $ \cap_i~\phi^i (\Lambda) $ tells another story: we first start with all terms and at each step we build a new set by eliminating terms which are both different of the empty list and cannot be deconstructed as $ n::x $, for some term $ x $ in the previous set. At the end we find exactly the terms which can be destructed arbitrarily many times through the constructors.
+
+The duality here is very clear: whereas elements of inductive types are built by constructing elements with constructors from scratch, elements of coinductive types are built by starting with everything and eliminating those which cannot be observed as a constructor. Therefore, whereas induction is about building things, coinduction is about destructing them. We will see on the next part that when talking about the induction and coinduction principles this gets inverted: whereas the induction principle allows us to destruct an element of an inductive type, the coinduction principle allows us to build an element into a coinductive type.
+
+\redbold{The induction and coinduction principles}
+
+In order to understand how inductive and coinductive types can be used, we need to look at their principles. Although it would be faster to just state them, it is much more intuitive to see how we can naturally recover them from a categorical semantics of induction and coinduction.
+
+Consider the category $\bold{Set}$ of sets and the endofunctor $ F : x \mapsto 1 + \N \times x $ with its obvious action on morphisms (note that $ F $ corresponds somewhat to the function $ \phi $ seen previously). We can then build the category $ \bold{Set}_F $ of $ F $-algebras, whose objects are functions (e.g., morphisms in $ \bold{Set} $) of the form $ \alpha_c : 1 + \N \times c \to c $ and morphisms in $ \bold{Set}_F(\alpha_c,\alpha_d) $ are functions $ f : c \to d $ making the following diagram commute.
+\begin{center}
+\begin{tikzcd}
+  1 + \N \times c \arrow[r,  "F f"] \arrow[d,"\alpha_c"] & 1 + \N \times d \arrow[d, "\alpha_d"] \\
+c \arrow[r, "f"] & d
+\end{tikzcd}
+\end{center}
+
+We can show that $ \bold{Set}_F$ has the terminal object $ List~\N $, and with $ \alpha_{List~\N} $ defined by $ * \mapsto [] $ and $ (n, l) \mapsto n :: l$. Then by initiality, for each $ \alpha_c : 1 + \N \times c \to c$, there is a unique function $ rec(\alpha_c) $ making the following diagram commute.
+\begin{center}
+\begin{tikzcd}[column sep=huge]
+  1 + \N \times List~\N \arrow[r,  "F (rec~\alpha_c))"] \arrow[d,"\alpha_{List~\N}"] & 1 + \N \times c \arrow[d, "\alpha_c"] \\
+List~\N \arrow[r, "rec~\alpha_c"] & c
+\end{tikzcd}
+\end{center}
+We see the induction principle naturally arise.
+
+\textbf{Induction Principle:} To define a function $rec~\alpha_c : List~\N \to c $, it suffices to define a function $ \alpha_c : 1 + \N \times c \to c $.
+
+A theorem by Lambek assures us that $ \alpha_{List~\N} $ is actually an isomorphism, so we can actually inverse it and find an explicit expression for $ rec~\alpha_c $ as $  \alpha_c \circ F(rec~\alpha_c)\circ \alpha_{List \N}^{-1}$. By separating the cases when the list is empty or not, we find
+\begin{align*}
+  &(rec~\alpha_c)~[] = \alpha_c~(*)\\
+  &(rec~\alpha_c)~(n::l) = \alpha_c~(n, (rec~\alpha_c)~l) \,.
+\end{align*}
+This is quite revealing: we see that defining the function $ \alpha_c $ is actually pattern matching with primitive recursion. For instance, if we take $ c = \N $ and $ \alpha_\N $ defined by $ * \mapsto 0 $ and $ (n, len) \mapsto len + 1 $, we get 
+\begin{align*}
+  &(rec~\alpha_c)~[] = 0\\
+  &(rec~\alpha_c)~(n::l) = ((rec~\alpha_c)~l) + 1 \,,
+\end{align*}
+the definition of the function $ length $ on lists.
+
+
+Likewise,  we can build the category $ \bold{Set}^F $ of $ F $-coalgebras, whose objects are functions of the form $ \beta_c : c \to 1 + \N \times c$ and morphisms in $ \bold{Set}^F(\beta_c,\beta_d) $ are functions $ f : c \to d $ making the following diagram commute.
+\begin{center}
+  \begin{tikzcd}
+    c \arrow[r, "f"] \arrow[d,"\beta_c"]& d \arrow[d, "\beta_d"]\\    
+  1 + \N \times c \arrow[r,  "F f"]  & 1 + \N \times d 
+\end{tikzcd}
+\end{center}
+
+We can then show that $ \bold{Set}^F$ has the terminal object $ Stream~\N $, with $ \beta_{Stream~\N} $ defined by $ [] \mapsto * $ and $ n :: l \mapsto (n, l)$. Then by finality, for each $ \beta_c : c \to 1 + \N \times c$, there is a unique function $ corec(\alpha_c) $ making the following diagram commute, thus yielding the coinduction principle.
+\begin{center}
+  \begin{tikzcd}[column sep=huge]
+    c \arrow[r, "corec~\beta_c"] \arrow[d,"\beta_c"]& Stream~\N \arrow[d, "\beta_{Stream~\N}"]\\
+    1 + \N \times c \arrow[r,  "F (corec~\beta_c)"]  & 1 + \N \times (Stream~\N)
+\end{tikzcd}
+\end{center}
+\textbf{Coinduction Principle:} To define a function $ c \to Stream~\N $, it suffices to define a function $ c \to 1 + \N \times c $.
+
+We first remark a very important point. Whereas functions defined by induction eliminates from an inductive type to an arbitrary type, coinductive functions do the opposite, eliminating from an arbitrary type to a coinductive one. Therefore, a function that eliminates from a coinductive type to an arbitrary one cannot be coinductive, just like a function that builds an inductive type from an arbitrary one cannot be inductive neither.
+
+A second theorem by Lambek also assures us that $ \beta_{Stream~\N} $ is an isomorphism, allowing us to write $ corec~\beta_c = \beta_{Stream~\N}^{-1} \circ F (corec~\beta_c) \circ \beta_c$. However, in the current setting we cannot give a as nice presentation\endnote{You can try for yourself: when going through the diagram, as the function $ \beta_c $ has a codomain which is a sum, we would need to make a distinction whether we take the left or the right codomain. It's not clear how to give a clean presentation of this, as in the case for pattern matching.} as in the case of pattern matching. However, we can change things if we impose that the coinductive type must have a single constructor. Here we get rid of the constructor $ [] $ (effectively imposing all streams to be infinite), leading us to the following diagram.
+\begin{center}
+  \begin{tikzcd}[column sep=huge]
+    c \arrow[r, "corec~\beta_c"] \arrow[d,"\beta_c"]& Stream~\N \arrow[d, "\beta_{Stream~\N}"]\\
+    \N \times c \arrow[r,  "F (corec~\beta_c)"]  & \N \times (Stream~\N)
+\end{tikzcd}
+\end{center}
+\textbf{New Coinduction Principle:} To define a function $ corec~\beta_c : c \to Stream~\N $, it suffices to define a function $ \beta_c : c \to \N \times c $, that is, two functions $ \beta_c^1 : c \to \N $ and $ \beta_c^2 : c \to c $.
+
+Now we can define the function $ \beta_c $ not by making a case distinction on the constructors for the type, but rather for the arguments of its only constructor (also called the fields). The equality $  corec~\beta_c = \beta_{Stream~\N}^{-1} \circ F (corec~\beta_c) \circ \beta_c $ now gives the following equations.
+\begin{align*}
+  &head~(corec~\beta_c)~x = \beta^1_c~x\\
+  &tail~(corec~\beta_c)~x = (corec~\beta_c)~(\beta^2_c~x) 
+\end{align*}
+This form of presenting coinduction is called copattern matching and was introduce by Abel et al in x. This presentation, which exists only for one constructor coinductive types, restores a symmetry and gives a much nicer way of using coinductive types. Let's look at an example of how to use them. If we take $ c = * $, $ \beta^1_* : * \mapsto 0 $ and $ \beta^2_* : * \mapsto * $ we get the following function, which builds the stream of only zeros.
+\begin{align*}
+  &head~(corec~\beta_c) = 0\\
+  &tail~(corec~\beta_c) = corec~\beta_c 
+\end{align*}
+
+The presentations of primitive (co)induction by (co)pattern matching also allows us to see how recursion and corecursion are characterized syntacticly. When defining $ rec~\alpha_c $ by recursion, the definition $ (rec~\alpha_c)~(n ::l) $ can only be a function of $ n $ and $   (rec~\alpha_c)~l$, that is, a recursive call can only be made on an argument of the constructor. On the other hand, when defining $ corec~\beta_c $ by corecursion, on the definition of $ tail~(corec~\beta_c)~x $ the corecursive call to $ corec~\beta_c $ must be outermost, as shown by the equation $ tail~(corec~\beta_c)~x = (corec~\beta_c)~(\beta^2_c~x)  $.
+
+
+
+\subsection{The Agda proof assistant}
+\label{subsec:agda}
+
+\textsc{Agda} is a dependently-typed programming language developed in Sweden, mainly used as a proof assistant. Its type system extends Martin Lof Type Theory with many features, such as (co) inductive types, universe polymorphism, sized types, etc. On the following, we present some of its particularities, which are not present in all proof assistants. 
+
+\redbold{A logic made unique by its type system}
+
+One of the main particularities of \textsc{Agda}, when compared with most proof assistants such as Coq, HOL, Lean, etc, is that \textsc{Agda}'s type system does not separate propositions from ``normal'' types. For instance, whereas in Coq the type $ \N $ of natural numbers lives in $ Set $ and the proposition true $ \top $ lives in $ Prop $, in \Agda both of them live in $ Set $\endnote{A hierarchy $ Prop $ of proof irrelevant types was recently added to \Agda, however the ``standard'' way of doing \Agda is to do everything with $ Set $. For instance, \Agda's standard library do not use $ Prop$.}. An important consequence is that, whereas in Coq the lambda term $\lambda x : A. x $ can either be the identity function for $ A $ (if $ A : Set $) or a proof of $ A \Rightarrow A $ (if $ A : Prop $), in \textsc{Agda} the term $ \lambda x : A.x $ is both the identity and a proof of $ A \Rightarrow A $ at the same time. It all depends if we prefer to interpret $ A$ as a normal type or a type representing a proposition. Therefore, \textsc{Agda} implements a radical version of Curry-Howard, making absolutely no difference between types ans propositions.
+
+Most proof assistants use the separation between types and propositions to treat them differently. More precisely, they normally implement a flavor of \textit{higher-order logic}, allowing propositions to be quantified over any domains. Explicitly, if $ P $ is a propositions and $ A $ is any type, we can always build $ \forall_A x. P $ and its type will always be $ Prop $, even when $ A = Prop$. This is expressed by the deduction rule
+\begin{center} 
+  \AxiomC{$\Sigma; \Gamma, x : A \vdash B : Prop $}  
+\UnaryInfC{$\Sigma;\Gamma \vdash \Pi x : A . B : Prop  $}
+\DisplayProof
+\end{center}
+This means that we can build propositions that talk about all propositions --- including themselves! ---, such as $ \forall_{Prop}. p \Rightarrow p $.
+
+The ability to build such ``weird'' propositions is refereed to as \textit{impredicativity}, and it is a whole subject in its own. However, the important point to know is that, whereas propositions are usually treated impredicatively, normal types are treated predicatively. More explicitly, for normal types we usually have a stratified infinite hierarchy $ Set_0 : Set_1 : Set_2 ... $ and the deduction rule
+\begin{center} 
+  \AxiomC{$\Sigma; \Gamma \vdash A : Set_i $}
+  \AxiomC{$\Sigma; \Gamma, x : A \vdash B : Set_j $}  
+\BinaryInfC{$\Sigma;\Gamma \vdash \Pi x : A . B : Set_{max\{i,j\}}  $}
+\DisplayProof
+\end{center}
+This implies that the type of $ \Pi a : Set_0. a \to a  $ is not $ Set_0$, but $ Set_1 $. Therefore, by quantifying over all elements of a certain universe $ Set_i $ we move to a higher one. As we can see, predicative systems feature a more restricted type of quantification, which avoids building objects that self-reference, such as $ \forall_{Prop} p. p \Rightarrow p $.
+
+As \Agda does not separate propositions and treats them directly as types, this means that propositions are also treated predicatively. Indeed, the proposition (or the type) $ P \to P $ for all propositions (or types) $ P $ is not directly representable in \Agda, as it is not possible to talk about all the types that live in all the $ Set_i $. However, if we restrict quantification to $ Set_0 $, this can be expressed by $ \Pi P : Set_0 . P \to P$, which now lives in $ Set_1 $.
+
+All in all, \Agda has a logic that is very different from the ones of most proof assistants, in which propositions are treated as normal types and live in a predicative world.
+
+\redbold{Inductive types, recursive functions and records}
+
+Like most proof assistants, \Agda features inductive types. Though its presentation is mostly standard, its main peculiarity is that elimination principles are not defined explicitly. Rather, elimination from an inductive type is done by defining a recursive function with clauses (in a Haskell-like manner) which then needs to pass the language's termination checker.
+
+For instance, we can declare the inductive type of natural numbers by
+
+\begin{center}\begin{code}%
+%
+\>[2]\AgdaKeyword{data}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSpace{}%
+\AgdaKeyword{where}\<%
+\\
+\>[2][@{}l@{\AgdaIndent{0}}]%
+\>[4]\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Nat}\<%
+\\
+%
+\>[4]\AgdaInductiveConstructor{succ}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Nat}\<%
+\end{code}\end{center}
+and then define the sum of two natural numbers by induction on the first element using the following definition.
+\begin{center}\begin{code}
+\>[2]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}+\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Nat}\<%
+\\
+%
+\>[2]\AgdaInductiveConstructor{zero}%
+\>[11]\AgdaOperator{\AgdaFunction{+}}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{x}\<%
+\\
+%
+\>[2]\AgdaSymbol{(}\AgdaInductiveConstructor{succ}\AgdaSpace{}%
+\AgdaBound{y}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{+}}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{succ}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{y}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{+}}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSymbol{)}\<%
+\end{code}\end{center}
+
+Another particularity of \Agda is that it also feature records, which are basically inductive types with one constructor and special treatment (as we will see on the next parts). For instance, we can define the type dependent pairs with the following record definition.
+
+\begin{center}\begin{code}
+    \>[2]\AgdaKeyword{record}\AgdaSpace{}%
+\AgdaRecord{$\Sigma$}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{B}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSpace{}%
+\AgdaKeyword{where}\<%
+\\
+\>[2][@{}l@{\AgdaIndent{0}}]%
+\>[4]\AgdaKeyword{constructor}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{},\AgdaUnderscore{}}}\<%
+\\
+%
+\>[4]\AgdaKeyword{field}\<%
+\\
+\>[4][@{}l@{\AgdaIndent{0}}]%
+\>[6]\AgdaField{fst}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaBound{A}\<%
+\\
+%
+\>[6]\AgdaField{snd}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaBound{B}\AgdaSpace{}%
+\AgdaField{fst}\<%
+\end{code}\end{center}
+
+We note that the fields are also called projections, as they can be used as eliminators. For instance, the application $ \textsf{fst}~(a,b) $ for $ (a,b) : \Sigma~A~B $ reduces to the value of $ a $.
+
+
+\redbold{Universe polymorphism}
+
+As already said, \Agda extends Martin Lof Type Theory in a number of ways. One of these new features is the addition of \textit{universe polymorphism}, which allows for building terms which can live in multiples universes. In order to understand what this means, suppose we want to define a function  $ List : Set \to Set $ which associates to each type A in $ Set $ the type of $ List~A $ of lists of elements in $ A $. However, $ Set $ in \Agda is just an alias for $ Set_0 $, as we have an infinite hierarchy $ Set_0 : Set_1 : ... $ of sorts. Thus if we have an type $ B $ which lives in $ Set_1 $ we need to declare another function $ List_1 : Set_1 \to Set_1 $ to build lists of elements in $ B $, and so on if we have a type $ C $ living in $ Set_2 $. Universe polymorphism allows us to build the term \[
+List : \Pi i : Level. Set_i \to Set_i
+  \,.\]which can then be instantiated at each level, avoiding the declaration of an infinite number of versions of $ List $.
+
+Such kind of polymorphism is called \textit{prenex} as the level quantification occurs in the outer part of the term. However, \Agda also supports a less used form of universe polymorphism called \textit{non-prenex}, in which level quantification can appear anywhere in the term. This allows for instance to build a function \[
+comp := \lambda a : (\Pi i :Level. Set_i). \lambda f : (\Pi i : Level. Set_i \to Set_i) .\lambda i : Level. (f~i)~(a~i)
+\,.\] of type $ (\Pi i :Level. Set_i) \to  (\Pi i : Level. Set_i \to Set_i) \to \Pi i :Level. Set_i $ which applies a universe polymorphic function $ f $ to a universe polymorphic value $ a $ to get another universe polymorphic value.
+
+\redbold{$ \boldsymbol \eta $-equivalence}
+
+Like some proof assistants (and unlike the $ \lambda \Pi $-calculus modulo rewriting), the \Agda conversion system features $ \eta $-equivalence, a kind of dual to $ \beta $-equivalence. Whereas $ \beta $-reduction explains how to reduce an eliminator (application) applied to a constructor (abstraction) \[
+(\lambda x : A. M) N \red_\beta M (N/x)
+  \,,\] $ \eta $-expansion explains how to expand to a constructor applied to an eliminator\endnote{We can also define $\eta $-equivalence by means of $ \eta $-reduction, however this is not so well-behaved when dealing with other types, such as the singleton type\cite{nlab:eta-conversion}.} \[
+f \red_\eta (\lambda x : A . f~x) \text{~~~~~~with }f : A \to B
+\,.\]
+
+Of course, starting from a term $ f : A \to B $ we could keep $ \eta $-expanding to infinity, as this is a non-terminating process. However, by expanding $ \lambda x : A . f~x $ we would create a $ \beta $-redex, thus we don't do this step and we say that $ \lambda x : A . f~x $ is in \textit{eta-long form}.
+
+Note that a major difference between $ \beta $-reduction and $ \eta $-expansion is that whereas $ \beta $-reduction can be defined in an untyped setting (as in the $ \lambda $-calculus), $ \eta $-expansion needs to inspect the type of the term in order to know if it is $ \eta $-expandable. Therefore, we say that $ \eta $-expansion is a \textit{type-directed} computation rule. 
+
+In the \Agda system, this rule is also defined for most record types\endnote{See the \Agda documentation for a detailed description of which records are allowed or note to feature $ \eta $-equivalence}. For instance, if we consider the previously defined record of dependent pairs, if $ pair $ is an element of $ \Sigma~\textsf{Nat}~(\lambda \_. \textsf{Nat}) $ (the type of pairs of natural numbers), then we have \[
+pair \equiv (fst~pair, snd~pair)
+\,.\]We then say that the term $ (fst~pair, snd~pair) $ is in eta-long form and we do not expand it anymore.
+
+\redbold{Coinductive types}
+
+
+
+
+
+
+\section{Agda2Dedukti: a practical translator into the $\boldsymbol  \lambda \boldsymbol \Pi $-calculus modulo rewriting}
+\label{sec:label}
+
+
+
+
+\section{Future Work}
+\label{sec:future}
+
+\subsection{Universe polymorphism beyond prenex}
+\label{subsec:label}
+
+
+
+\subsection{Interoperability between predicative and impredicative type theory}
+\label{subsec:predtoimpred}
+
+
+\subsection{A second look at Inductive Types}
+\label{subsec:label}
+\newpage
+\begin{appendices}
+  \section{References}
+\bibliographystyle{abbrv}  
+\bibliography{ref}
+
+\section{Typing rules for the $ \boldsymbol \lambda \boldsymbol \Pi $-calculus modulo rewriting}
+
+The following describes typing on the $ \lambda \Pi $-calculus modulo rewriting for a given set of rewrite rules $ \mathcal{R} $. Given a context $ \Gamma $, a signature $ \Sigma $ and $ M,A \in \Lambda_{\lambda \Pi} $, we define the typing judgment $ \Sigma; \Gamma \vdash M : A $ inductively by the following deduction rules\cite{thU}. The relation $ \equiv $ on the rule Conv is the least equivalence relation containing $ \equiv_\beta $ and the context and substitution closure of the rules in $ \mathcal{R} $. In the rules Decl, Prod, Convs, Abs and Conv, the letter $ s $ stands either for $ \Type $ or $ \Kind $.
+
+\begin{samepage}
+  \begin{center}
+    \textbf{Context forming rules}
+  \end{center}
+\begin{center}
+  \AxiomC{}
+\RightLabel{Empty}
+\UnaryInfC{$\Sigma; \emptyset~\text{well-formed}$}
+\DisplayProof
+\hskip 1.5em
+\AxiomC{$\Sigma;\Gamma \vdash A : s$}
+\AxiomC{$x \notin \Gamma$}
+\RightLabel{Decl}
+\BinaryInfC{$\Sigma;\Gamma, x : A~\text{well-formed} $}
+\DisplayProof
+\end{center}
+  \begin{center}
+    \textbf{Term forming rules}
+  \end{center}
+
+\begin{center}
+  \AxiomC{$ \Sigma;\Gamma~\text{well-formed} $}
+\RightLabel{Sort}
+\UnaryInfC{$\Sigma;\Gamma \vdash \Type : \Kind$}
+\DisplayProof
+\end{center}
+\begin{center} 
+  \AxiomC{$\Sigma; \Gamma \vdash A : \Type $}
+  \AxiomC{$\Sigma; \Gamma, x : A \vdash B : s $}  
+\RightLabel{Prod}
+\BinaryInfC{$\Sigma;\Gamma \vdash \Pi x : A . B : s  $}
+\DisplayProof
+\end{center}
+\begin{center}
+\AxiomC{$\Sigma;\Gamma~\text{well-formed}$}
+\AxiomC{$ x : A \in \Gamma $}
+\RightLabel{Var}
+\BinaryInfC{$\Sigma;\Gamma \vdash x : A  $}
+\DisplayProof
+\end{center}
+\begin{center}
+\AxiomC{$\Sigma;\Gamma~\text{well-formed}$}
+\AxiomC{$c : A \in \Sigma$}
+\AxiomC{$\Sigma; \emptyset \vdash A : s $}
+\RightLabel{Cons}
+\TrinaryInfC{$\Sigma;\Gamma \vdash c : A  $}
+\DisplayProof
+\end{center}
+\begin{center}
+  \AxiomC{$\Sigma;\Gamma \vdash \Pi x : A . B : s  $}
+  \AxiomC{$\Sigma; \Gamma, x : A \vdash M : B $}
+  \RightLabel{Abs}
+\BinaryInfC{$\Sigma;\Gamma \vdash \lambda x : A . M :\Pi x : A . B  $}
+\DisplayProof
+\end{center}
+\begin{center}
+  \AxiomC{$\Sigma;\Gamma \vdash M : \Pi x : A . B  $}
+  \AxiomC{$\Sigma; \Gamma \vdash N : A $}
+  \RightLabel{App}
+\BinaryInfC{$\Sigma;\Gamma \vdash M N : B(N/x) $}
+\DisplayProof
+\end{center}
+  \begin{center}
+    \textbf{Conversion rule}
+  \end{center}
+    
+\begin{center}
+  \AxiomC{$\Sigma;\Gamma \vdash M : A $}
+  \AxiomC{$\Sigma;\Gamma \vdash B : s $}  
+  \AxiomC{$A \equiv B$}
+  \RightLabel{Conv}
+\TrinaryInfC{$\Sigma;\Gamma \vdash M : B $}
+\DisplayProof
+\end{center}
+\begin{center}
+ \large \textbf{Typing rules for the $ \boldsymbol\lambda \boldsymbol\Pi $-calculus modulo rewriting}
+\end{center}
+\end{samepage}
+
+\section{End-notes}
+\label{sec:foot}
+\textbf{You can click on the number to get back to where the end-note was made.}
+\printendnotes[custom]
+
+
+\end{appendices}
+
+
+
+ 
+
+
+\end{document}
