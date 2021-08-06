@@ -14,7 +14,8 @@
 \usepackage{float}
 \usepackage{graphicx}
 \usepackage{courier}
-\usepackage{amsmath, amssymb, amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb, amsthm}
 \usepackage{subfloat}
 \usepackage{parskip}
 \usepackage{fancyhdr}
