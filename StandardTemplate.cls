@@ -76,9 +76,9 @@
 \def\@maketitle{
 {\raggedright % Note the extra {
   \begin{center}
-
+\vspace{12cm} \ \\   
 {\LARGE  \bfseries \@title }\\[2ex] 
-{\large  \@author}\\[1.6ex] 
+{\large  \@author}\\[1.5cm] 
 
 \end{center}
 

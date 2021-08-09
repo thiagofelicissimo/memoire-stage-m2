@@ -1,9 +1,10 @@
 \documentclass[]{StandardTemplate}
 \usepackage{agda}
 \usepackage[utf8]{inputenc}
-\newcommand{\red}{\longrightarrow}
+% \newcommand{\red}{\longrightarrow}
+\newcommand{\red}{\xhookrightarrow{\quad}}
 \title{\textsf{\color{darkred}{Representing \textsc{Agda} and Coinduction in the \\ $\boldsymbol  \lambda \boldsymbol \Pi $-calculus modulo rewriting}} }
-\author{{\Large Thiago Felicissimo} \\ [0.6em] {\small Master 2 Internship from March 2021 to August 2021 \\Supervised by Frédéric Blanqui and Gilles Dowek \\ Deducteam/Laboratoire Méthodes Formelles}}
+\author{{\Large Thiago Felicissimo} \\ [0.8em] {\small MPRI Master 2 Internship from March 2021 to August 2021 \\Supervised by Frédéric Blanqui and Gilles Dowek \\ Deducteam/Laboratoire Méthodes Formelles}}
 \usepackage{bussproofs}
 \usepackage{tikz-cd}
 \usepackage{stmaryrd}
@@ -108,7 +109,7 @@
 \maketitle
 
 \newcommand{\dedukti}[1]{\begin{center}\begin{tcolorbox}[blanker,left=3mm,right=3mm,
-  borderline vertical={2pt}{0pt}{black}, text width=175mm]
+  borderline vertical={2pt}{0pt}{black}, text width=180mm]
 \abovedisplayskip=0pt
   \begin{flalign*}
     #1
@@ -118,18 +119,50 @@
 
 \subsection*{General Context}
 
+One of the main achievements of the research community on proof and type systems is the development of proof assistants, which are put simply programming languages for doing formal proofs. They are very important nowadays both in mathematics, for the development and verification of mathematical proofs, and also in computer science, for proving properties about algorithms and protocols.
+
+However, as each proof assistant implements its own proof system, it is not possible to take a proof developed in one proof assistant and use it in another one, which leads to wasting time redoing a proof in multiple systems. It is thus becoming increasingly important to develop ways of doing proof interoperability, that is, translating proofs from one system to another.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.4\textwidth]{inter.pdf}
+\end{figure}
+
+\textsc{Deducteam}, an Inria research team located at the ENS Paris-Saclay, addresses this problem by developing a \textit{logical framework} based on the $ \lambda \Pi $-calculus modulo rewriting and implemented in \Dedukti{}. Because of its strong expressivity, we can use it to represent the logics of proof assistants in an unified way, which then makes much simpler to perform translations between them. Nowadays, many translators from and into \Dedukti{} are being developed, and the ultimate goal is to be able to translate any proof from a proof assistant to another by using \Dedukti{} as an intermediate system.
+
 \subsection*{Problem Studied}
+
+\Agda{} is a proof assistant under active development nowadays, featuring a rich system and a very active user community. Therefore, it is important to understand how we can encode its logic in \Dedukti{}. This problem was first addressed by Guillaume Genestier, who developed a prototype translator from \Agda{} to \Dedukti{}. However, the translator is only able to handle a fragment of \Agda{}, with many features missing, such as sized types, non-prenex universe polymorphism and coinduction. Moreover, until the beginning of this internship its development was halted, and it was not capable of using the newest versions neither of \Dedukti{} nor of \Agda{}.
+
+Coinduction is a principle, or a proof technique, dual to induction and which allows to handle possibly infinite objects in a natural way, such as infinite lists, infinite trees, formal languages, non well-founded sets, etc. Because of its usefulness, it is increasingly being added to proof assistants, such as \textsc{Coq}, \textsc{Isabelle}, \textsc{PVS} and, of course, \textsc{Agda}. In order to be able to translate proofs by coinduction coming from multiple proof assistants it is thus important to first understand how to encode coinduction in \Dedukti{}, something that had never been done before.
 
 \subsection*{Proposed Contributions}
 
+During this internship, we studied the representation of \Agda{} and coinduction in \Dedukti{}. \Agda{} features two presentations of coinduction (musical coinduction and copattern coinduction) and, based on their internal syntax representation in \Agda{}, we proposed an encoding in \Dedukti{} of both ways of using coinduction. We resumed the development of the \AgdaDedukti{} translator and  extended it with the proposed encoding, allowing it to translate automatically many proofs by coinduction into \Dedukti{}.
+
+We also proposed many other improvements to the translator. We updated it to the latest \Agda{} version, and eliminated a dependency with an \textit{ad hoc} branch which made updating the translator almost impractical. Moreover, we extended \AgdaDedukti{} with a version targeting \Lambdapi{}, a new proof assistant that extends \Dedukti{} with interactive proof development and which should replace it in the future.  
+
 \subsection*{Arguments Supporting Their Validity}
+
+For the first time, we can represent coinduction in \Dedukti{}, which marks a starting point for sharing proofs by coinduction with other proof assistants. Using the improved translator, we have translated many coinduction definitions in \Agda{} to \Dedukti{}, which in the future can allow for their translation into other systems. For instance, we would be very interested to look at how proofs made with copattern-matching coinduction could be reused in \textsc{Coq}, as its negative coinductive types have a very similar principle.
+
+Moreover, with the new \Lambdapi{} version we make \Agda{} proofs also available in this system, something that is essential given that \Dedukti{} is probably going to be discontinued. This has also the additional interest of allowing us to verify the translated proofs both in \Dedukti{} and in \Lambdapi{}, increasing our confidence that they are indeed correct.
 
 \subsection*{Summary and Future Work}
 
+Coinduction is a very useful proof technique, present in many proof assistants but (until now) missing from \Dedukti{}. We proposed a first representation of coinduction in \Dedukti{}, which opens a research direction of sharing coinduction proofs between proof assistants. Our encoding of \Agda{} proofs by coinduction was implemented in \AgdaDedukti{}, whose development was resumed, and this allowed us to translate in an automatic way many such proofs. However, our contribution also went further, as we extended \AgdaDedukti{} to work with \Lambdapi{} and we updated the translator to work with the latest versions of \Agda{}.
+
+Our contributions open many interesting research directions we would like to explore. For instance, it is a natural next question to see how the translated proofs can be imported into other proof assistants. We could proceed as François Thiré, which in \cite{logipedia} exported a library of arithmetical proofs from \textsc{Matita} to other proof assistants, going through \Dedukti{}.
+
+Going in a different direction, there are still many features missing from the translator, such as sized types and non-prenex universe polymorphism. We already have a prototype of an encoding that concerns the later, but we still have to implement it and to prove its correctness.
+
+Finally, our ultimate goal is to develop techniques to share \Agda{} proofs with other proof assistants. This is a very interesting research problem as \Agda{}, differently from most proof assistants, features a predicative type system, and completely mixes propositions with types. Therefore, it is of both theoretical and practical interest to build encodings between predicative and impredicative type theory, which would allow us to share proofs between \Agda{} and the more traditional impredicative proof assistants, such as \textsc{Coq}, \text{Isabelle}, etc.
 
 
-\subsection*{Acknowledgements}
 
+\subsection*{Acknowledgments}
+
+I would first like to thank Frédéric Blanqui and Gilles Dowek, who very thoroughly supervised my internship and accepted to be my PhD supervisors. I also need to thank Guillaume Genestier, the previous developer of \AgdaDedukti{} who introduced me to parts of its code. I would like to thank Jesper Cockx, an \Agda{} developer who very kindly explained to me parts of the \Agda{} codebase and helped me to fix problems with the translator, whose help was essential for my internship. Finally, I would also like to thank all members of \textsc{Deducteam}, who very warmly welcomed me into the team. 
 
 \newpage
 \section{Background}
@@ -174,7 +207,7 @@ To resume things, we can give the following characterization of the hierarchy of
 \end{tikzcd}
 \end{center}
 
-\redbold{The $ \lambda \Pi $-calculus as a logical framework}
+\subsubsection{The $ \lambda \Pi $-calculus as a logical framework}
 
 
 The $ \lambda \Pi $-calculus is well known for being in "propositions as types" correspondence with intuitionistic predicate logic\endnote{More precisely, with minimal intuitionistic predicate logic, that is, the fragment on intuitionistic predicate logic only featuring implication and universal quantification.}. Through the Curry-Howard correspondence, a proposition $ P $ is seen as a type $ P $ and the proofs of $ P $ are the inhabitants of this type. For instance, if $ P $ is a proposition, we represent the trivial proof of $ P \Rightarrow P $ by $ \lambda x : P. x$.
@@ -191,17 +224,17 @@ The judgment as types approach was the one originally proposed by \cite{ELF} to 
 
 If we take another look at the encoding of predicate logic, we can note an important point we did not yet discuss. A proof of $ P \vdash P $ with a cut is represented through the Curry-Howard correspondence by $ (\lambda x : P. x) \alpha_P$ --- where $ \alpha_P $ represents the proof of $ P $ in the context ---, whereas through the judgment as types approach we get the term $ \ctb{\Rightarrow_{el}}~P~P~\alpha_P~(\ctb{\Rightarrow_{in}}~P~P~(\lambda x : \ctb{Proof}~P. x) )$. On the first case, we have $ (\lambda x : P. x) \alpha_P \red \alpha_P $ and thus the term reduces to the representation of the cut-free proof. However, by using the last approach we lose this computational behavior, as the term $ \ctb{\Rightarrow_{el}}~P~P~\alpha_P~(\ctb{\Rightarrow_{in}}~P~P~(\lambda x : \ctb{Proof}~P. x) )$ is stuck and cuts do not reduce anymore.
 
-As pointed out by Assaf\cite{assaf}, encodings such as this one, which lack preservation of computation, fail to be sound for more higher-order systems, such as for the Calculus of Constructions, as it cannot simulate proof reduction, $ \beta $-reduction or other forms of computation.  Thus, even though we are capable of encoding systems such as predicate logic and System F in a sound and complete way, the rigidity of the computation on the $ \lambda \Pi $-calculus prevents us from going further.
+As pointed out by Assaf\cite{assaf}, encodings such as this one, which lack preservation of computation, fail to be sound for more higher-order systems, such as for the Calculus of Constructions, as they cannot simulate proof reduction, $ \beta $-reduction or other forms of computation.  Thus, even though we are capable of encoding systems such as predicate logic and System F, the rigidity of the computation on the $ \lambda \Pi $-calculus prevents us from going further.
 
 
-\redbold{Enriching computation in the $ \lambda \Pi $-calculus}
+\subsubsection{Enriching computation in the $ \lambda \Pi $-calculus}
 
 
 In 2007, Dowek and Cousineau considered in \cite{dowek2007} an extension of the $ \lambda \Pi $-calculus in which the notion of computation can be extended by adding rewriting rules. The syntax and the typing rules are kept the same, however they consider a more general notion of equivalence than only $ \equiv_\beta $. More precisely, given a set $ \mathcal{R} $ of rewriting rules --- pairs of the form $ c M_1..M_k \red N $, where $ c $ is a constant and $ M_1,...,M_k,N \in \Lambda_{\lambda \Pi} $ ---, the relation $ \equiv $ in the $ \lambda \Pi / \mathcal{R} $-calculus is defined as the least equivalence relation containing $ \equiv_\beta $ and the context and substitution closure of the rules in $ \mathcal{R} $.  Given a rewrite rule $ c M_1 .. M_k \red N $, we normally call $ c $ its head symbol, $ M_1 ..M_k $ its patterns and $ N $ its body.
  
 By addressing the poorness of computation in the $ \lambda \Pi $-calculus and adding the possibility of extending rewriting, the $ \lambda \Pi /\mathcal{R} $-calculus becomes capable of expressing much richer systems. In \cite{dowek2007}, Dowek and Cousineau showed that we can express any functional PTS in a sound and complete way, which was already not possible in the $ \lambda \Pi $-calculus. Since then, researchers in Deducteam have built on top of this work and proposed encodings of much richer features in the $ \lambda \Pi /\mathcal{R} $-calculus, such as inductive types\cite{dedukti}, universe polymorphism\cite{guillaume}, cumulativity\cite{assaf}\cite{thire}, proof-irrelevance\cite{proofIrel}, etc. 
 
-\redbold{Expressing logics in the $ \lambda \Pi $-calculus modulo rewriting}
+\subsubsection{Expressing logics in the $ \lambda \Pi $-calculus modulo rewriting}
 
 Let's now take a second try at doing a judgment as types encoding of logic, but now using rewrite rules. In the $ \lambda \Pi $-calculus, we declared a constant $ \ctb{\Rightarrow} $ to represent implication and we had to declare constants $ \ctb{\Rightarrow_{in}} $ and $ \ctb{\Rightarrow_{el}} $ to represent the introduction and elimination rules for this connective. However, a much nicer approach is possible in the  $ \lambda \Pi / \mathcal{R} $-calculus: we can just declare a rewrite rule identifying proofs of $ a~\ctb{\Rightarrow}~b $ with functions from $\ctb{Proof}~a $ to $\ctb{Proof}~b$.\[
 \ctb{Proof}~(a~\ctb{\Rightarrow}~b) \red \ctb{Proof}~a \to \ctb{Proof}~b
@@ -234,16 +267,16 @@ saying that an element of $ \ctb{\forall}~A~P $ is simply a function taking an e
 
 Actually, in \cite{thU} researchers from Deducteam proposed a theory containing the one just presented which is capable of expressing in a unified way many systems and logics in the $ \lambda \Pi /\mathcal{R} $-calculus, such as (intuitionistic and classic) predicate logic, higher order logic, the Calculus of Constructions, etc. We can thus see that the expressivity of the  $ \lambda \Pi /\mathcal{R} $-calculus makes it a very good candidate to be used as a logical framework and universal proof checker. 
 
-\redbold{Dedukti and Lambdapi: implementing the $ \lambda \Pi $-calculus modulo rewriting}
+\subsubsection{Dedukti and Lambdapi: implementing the $ \lambda \Pi $-calculus modulo rewriting}
 
-Of course, if we want to use the $ \lambda \Pi /\mathcal{R} $-calculus as a practical logical framework, we need to have some real implementation of it. \textsc{Dedukti} and its newer brother \textsc{Lambdapi} are two implementations of this system, and are used in practice to represent and check proofs. Many translators to and from \textsc{Dedukti} have already been developed or are in development\cite{thire}\cite{sttfa}\cite{assaf}, and most notably the encyclopedia of formal proofs expressed in \textsc{Dedukti}  \textit{Logipedia}\cite{logipedia} is one of the main projects at Deducteam. 
+Of course, if we want to use the $ \lambda \Pi /\mathcal{R} $-calculus as a practical logical framework, we need to have some real implementation of it. \textsc{Dedukti} and its newer brother \textsc{Lambdapi} are two implementations of this system, and are used in practice to represent and check proofs. Many translators to and from \textsc{Dedukti} have already been developed or are in development, and concerns proof assistants such as \textsc{Coq}\cite{assaf}\cite{gaspard}, \textsc{HOL}\cite{sttfa}\cite{assaf:hal-01097412}, \textsc{PVS}\cite{gilbert:hal-01673517}\cite{proofIrel}, \textsc{Matita}\cite{thire}, etc. Most notably, the encyclopedia of formal proofs expressed in \textsc{Dedukti}  \textsc{Logipedia}\cite{logipedia} is also one of the main projects at \textsc{Deducteam}. 
 
 \subsection{Coinduction}
 \label{sec:coind}
 
-Induction is a technique widely used in mathematics, which allows to define and reason about finitely constructed objects, such as integers, lists and trees. The well-foundedness of these objects is key in order to have their induction principles. However, by dropping the well-foundedness condition we find new objects which, although less used, are actually very useful when doing mathematics. This new technique, called Coinduction, allows us to represent possibly infinite objects, such as infinite lists, infinite trees but also formal languages, non well-founded sets and B\"ohm trees. Because of its usefulness, coinduction is nowadays present in many proof assistants, such as \textsc{Coq}, \Agda{} and \textsc{PVS}. In order to understand coinduction and its relation to induction, we present its basis in this subsection.
+Induction is a technique widely used in mathematics, which allows to define and reason about finitely constructed objects, such as integers, lists and trees. The well-foundedness of these objects is key in order to have their induction principles. However, by dropping the well-foundedness condition we find new objects which, although less used, are actually very useful when doing mathematics. This new technique, called coinduction, allows us to represent possibly infinite objects, such as infinite lists, infinite trees but also formal languages\cite{abelequational} and non well-founded sets\cite{Aczel1988-ACZNS}. Because of its usefulness, coinduction is nowadays present in many proof assistants, such as \textsc{Coq}, \Agda{} and \textsc{PVS}. In order to understand coinduction and its relation to induction, we present its basis in this subsection.
 
-\redbold{(Co)Inductive Types}
+\subsubsection{(Co)Inductive Types}
 
 Inductive types are well known by most proof assistant users. By defining a type $ A $ and a set of constructors for $ A $ (satisfying a certain set of constraints, so we have a nice metatheory), the elements of the inductive type $ A $ are defined as the smallest set of terms stable by these constructors\endnote{This part only concerns \textit{canonical terms}, that is, closed terms in normal form. For instance, if we consider elements of $ \N $ closed but not in normal form we also have $ (\lambda x : \N. x)~0$ which does not fit this description. Likewise, if we consider elements of $ \N $ in normal form but not closed, we can have for instance a variable $ x $ of type $ \N $. However, by imposing those two constraints at the same time, we are assured (in systems which have the \textit{canonicity} property, which is a desirable metaproperty in most cases) that such elements of inductive types are indeed the least fixed points of the presented function.}. For instance, we can declare the type $ List~\N $ of lists of natural numbers, with constructors $ [] : List~\N $ for the empty list and $ (\_::\_) : \N \to List~\N \to List~\N $ for adding an element to a list. Then we declare the elements of $ List~\N $ as the smallest set of terms closed by these constructors, that is, the least fixed point of the function \[
 \phi: X \mapsto \{ []\} \cup \{ n::x \mid x \in X, n : \N\}\,,
@@ -261,9 +294,9 @@ On the other hand, the equation $ \cap_i~\phi^i (\Lambda) $ tells another story:
 
 The duality here is very clear: whereas elements of inductive types are built by constructing elements with constructors from scratch, elements of coinductive types are built by starting with everything and eliminating those which cannot be observed as constructors. Therefore, whereas induction is about building things, coinduction is about destructing them. We will also see on the next part that when looking at the induction and coinduction principles this gets inverted: whereas the induction principle allows us to destruct an element of an inductive type, the coinduction principle allows us to build an element into a coinductive type.
 
-\redbold{(Co)Recursion}
+\subsubsection{(Co)Recursion}
 
-In order to understand how inductive and coinductive types can be used, we need to look at their principles. Although it would be faster to just state them, it is much more intuitive to see how we can naturally recover them from a categorical semantics of induction and coinduction.
+In order to understand how inductive and coinductive types can be used, we need to look at their principles. Although it would be faster to just state them, it is much more intuitive to see how we can naturally recover them from a categorical semantics of induction and coinduction. This is a standard presentation and can be found in works such as in \cite{vene2000categorical}.
 
 Consider the category $\bold{Set}$ of sets and the endofunctor $ F : X \mapsto 1 + \N \times X $ with its obvious action on morphisms (note that $ F $ corresponds somewhat to the function $ \phi $ seen previously). We can then build the category $ \bold{Set}_F $ of $ F $-algebras, whose objects are functions (e.g., morphisms in $ \bold{Set} $) of the form $ \alpha_A : 1 + \N \times A \to A $ and morphisms in $ \bold{Set}_F(\alpha_A,\alpha_B) $ are functions $ f : A \to B $ making the following diagram commute.
 \begin{center}
@@ -280,11 +313,11 @@ We can show that $ \bold{Set}_F$ has the terminal object $ List~\N $, and with $
 List~\N \arrow[r, "rec~\alpha_A"] & A
 \end{tikzcd}
 \end{center}
-We see the induction principle naturally arise.
+We see the recursion principle naturally arise.
 
-\textbf{Induction Principle:} Each $ \alpha_A : 1 + \N \times A \to A $ defines a unique function $rec~\alpha_A : List~\N \to A $;
+\textbf{Recursion Principle:} Each $ \alpha_A : 1 + \N \times A \to A $ defines a unique function $rec~\alpha_A : List~\N \to A $;
 
-A theorem by Lambek ensures that $ \alpha_{List~\N} $ is actually an isomorphism, so we can actually inverse it and find an explicit expression for $ rec~\alpha_A $ as $  \alpha_A \circ F(rec~\alpha_A)\circ \alpha_{List \N}^{-1}$. By separating the cases when the list is empty or not, we find
+A theorem by Lambek\cite{Lambek} ensures that $ \alpha_{List~\N} $ is actually an isomorphism, so we can actually inverse it and find an explicit expression for $ rec~\alpha_A $ as $  \alpha_A \circ F(rec~\alpha_A)\circ \alpha_{List \N}^{-1}$. By separating the cases when the list is empty or not, we find
 \begin{align*}
   &(rec~\alpha_A)~[] = \alpha_A~(*)\\
   &(rec~\alpha_A)~(n::l) = \alpha_A~(n, (rec~\alpha_A)~l) \,.
@@ -305,18 +338,18 @@ Likewise,  we can build the category $ \bold{Set}^F $ of $ F $-coalgebras, whose
 \end{tikzcd}
 \end{center}
 
-We can then show that $ \bold{Set}^F$ has the terminal object $ Stream~\N $, with $ \beta_{Stream~\N} $ defined by $ [] \mapsto * $ and $ n :: l \mapsto (n, l)$. Then by finality, for each $ \beta_A : A \to 1 + \N \times A$, there is a unique function $ corec~\alpha_A $ making the following diagram commute, thus yielding the coinduction principle.
+We can then show that $ \bold{Set}^F$ has the terminal object $ Stream~\N $, with $ \beta_{Stream~\N} $ defined by $ [] \mapsto * $ and $ n :: l \mapsto (n, l)$. Then by finality, for each $ \beta_A : A \to 1 + \N \times A$, there is a unique function $ corec~\alpha_A $ making the following diagram commute, thus yielding the corecursion principle.
 \begin{center}
   \begin{tikzcd}[column sep=huge]
     A \arrow[r, "corec~\beta_A"] \arrow[d,"\beta_A"]& Stream~\N \arrow[d, "\beta_{Stream~\N}"]\\
     1 + \N \times A \arrow[r,  "F (corec~\beta_A)"]  & 1 + \N \times (Stream~\N)
 \end{tikzcd}
 \end{center}
-\textbf{Coinduction Principle:} Each $ \beta_A : A \to 1 + \N \times A $ defines a unique function $ corec~\beta_A : A \to Stream~\N $.
+\textbf{Corecursion Principle:} Each $ \beta_A : A \to 1 + \N \times A $ defines a unique function $ corec~\beta_A : A \to Stream~\N $.
 
-We first remark a very important point. Whereas functions defined by induction eliminates from an inductive type to an arbitrary type, coinductive functions do the opposite, eliminating from an arbitrary type to a coinductive one. Therefore, a function that eliminates from a coinductive type to an arbitrary one cannot be coinductive, just like a function that builds an inductive type from an arbitrary one cannot be inductive neither.
+We first remark a very important point. Whereas functions defined by recursion eliminates from an inductive type to an arbitrary type, corecursive functions do the opposite, eliminating from an arbitrary type to a coinductive one. Therefore, a function that eliminates from a coinductive type to an arbitrary one cannot be corecursive, just like a function that builds an inductive type from an arbitrary one cannot be recursive neither.
 
-A second theorem by Lambek ensures also that $ \beta_{Stream~\N} $ is an isomorphism, allowing us to write $ corec~\beta_A = \beta_{Stream~\N}^{-1} \circ F (corec~\beta_A) \circ \beta_A$. By doing a case analysis on the value of $ \beta_A~x$, we can then find the following expression for $ corec~\beta_A $.\[
+A second theorem by Lambek\cite{Lambek} ensures also that $ \beta_{Stream~\N} $ is an isomorphism, allowing us to write $ corec~\beta_A = \beta_{Stream~\N}^{-1} \circ F (corec~\beta_A) \circ \beta_A$. By doing a case analysis on the value of $ \beta_A~x$, we can then find the following expression for $ corec~\beta_A $.\[
 (corec~\beta_A)~x = \begin{cases*}
   [] & if $ \beta_A~x = * $\\
   n :: ((corec~\beta_A) (y)) & if $ \beta_A~x = (n,y) $
@@ -349,18 +382,18 @@ We could take this clause as a definition of $natStream$, however as it refers t
 %   &tail~(corec~\beta_c n) = (corec~\beta_c)~(n+1)
 % \end{align*}
 
-The derived equations for recursion and corecursion also allows us to see how they are characterized syntactically. When defining $ rec~\alpha_c $ by recursion, the definition $ (rec~\alpha_c)~(n ::l) $ can only be a function of $ n $ and $   (rec~\alpha_c)~l$. This means that any recursive call can only be made on the recursive argument of the constructor --- $ l $ in this case. We shall also remark that most proof assistants, like \textsc{Coq}, allow for a more general form of recursion, which allow for recursive calls to be performed in any argument structurally smaller.
+% The derived equations for recursion and corecursion also allows us to see how they are characterized syntactically. When defining $ rec~\alpha_c $ by recursion, the definition $ (rec~\alpha_c)~(n ::l) $ can only be a function of $ n $ and $   (rec~\alpha_c)~l$. This means that any recursive call can only be made on the recursive argument of the constructor --- $ l $ in this case. We shall also remark that most proof assistants, like \textsc{Coq}, allow for a more general form of recursion, which allow for recursive calls to be performed in any argument structurally smaller.
 
 
-On the other hand, when defining $ corec~\beta_c $ by corecursion, we can send its value either to the empty stream, or to a new instance of the constructor $ \_::\_ $, in which the second argument must be the result of a corecursive call to $ corec~\beta_c $. Therefore, the body of the corecursive function must be directly equal to an instance of the constructor, and corecursive calls must be given as direct argument to constructors, as it is the case in $   (corec~\beta_\N)~n = n :: ((corec~\beta_\N)~(n + 1)) $. When discussing the implementation of coinduction in Agda we will see in more depth these criteria.
+% On the other hand, when defining $ corec~\beta_c $ by corecursion, we can send its value either to the empty stream, or to a new instance of the constructor $ \_::\_ $, in which the second argument must be the result of a corecursive call to $ corec~\beta_c $. Therefore, the body of the corecursive function must be directly equal to an instance of the constructor, and corecursive calls must be given as direct argument to constructors, as it is the case in $   (corec~\beta_\N)~n = n :: ((corec~\beta_\N)~(n + 1)) $. When discussing the implementation of coinduction in Agda we will see in more depth these criteria.
 
 
 \subsection{The Agda proof assistant}
 \label{subsec:agda}
 
-\textsc{Agda} is a dependently-typed programming language developed in Sweden, mainly used as a proof assistant. Its type system extends Martin-L\"of Type Theory with many features, such as (co) inductive types, universe polymorphism, sized types, etc. On the following, we take a look at some of its main characteristics. 
+\textsc{Agda} is a dependently-typed programming language developed in Sweden, mainly used as a proof assistant\cite{agda}. Its type system extends Martin-L\"of Type Theory\cite{martin1984intuitionistic} with many features, such as (co) inductive types, universe polymorphism, sized types, etc. On the following, we take a look at some of its main characteristics. We refer to appendix X for some more optional details.
 
-% \redbold{A predicative type system}
+% \subsubsection{A predicative type system}
 
 % One of the main particularities of \textsc{Agda}, when compared with most proof assistants such as Coq, HOL, Lean, etc, is that \textsc{Agda}'s type system does not separate propositions from ``normal'' types. For instance, whereas in Coq the type $ \N $ of natural numbers lives in $ Set $ and the proposition true $ \top $ lives in $ Prop $, in \Agda{} both of them live in $ Set $\endnote{A hierarchy $ Prop $ of proof irrelevant types was recently added to \Agda{}, however the ``standard'' way of doing \Agda{} is to do everything with $ Set $. For instance, \Agda{}'s standard library do not use $ Prop$.}. An important consequence is that, whereas in Coq the lambda term $\lambda x : A. x $ can either be the identity function for $ A $ (if $ A : Set $) or a proof of $ A \Rightarrow A $ (if $ A : Prop $), in \textsc{Agda} the term $ \lambda x : A.x $ is both the identity and a proof of $ A \Rightarrow A $ at the same time. It all depends if we prefer to interpret $ A$ as a normal type or a type representing a proposition. Therefore, \textsc{Agda} implements a radical version of Curry-Howard, making absolutely no difference between types ans propositions.
 
@@ -385,7 +418,7 @@ On the other hand, when defining $ corec~\beta_c $ by corecursion, we can send i
 
 % All in all, \Agda{} has a logic that is very different from the ones of most proof assistants, in which propositions are treated as normal types and live in a predicative world.
 
-\redbold{Universes and type system}
+\subsubsection{Universes and type system}
 
 Just like in Martin-L\"of Type Theory, \Agda{} features an infinite hierarchy of universes $ Set_0 : Set_1 : Set_2 ... $, such that any type must be typed by a universe  --- note that universes themselves satisfy this criteria, as each universe $ Set_i $ is typed by the universe $ Set_{i+1} $. We call the integers indexing the universes \textit{universe levels}. We also might refer to universes as sorts. Most of the time, we write $ Set $ when referring to $ Set_0 $. We also note that, unlike \textsc{Coq} and Martin-L\"of Type Theory, \Agda{} does not feature comulativity by default, which is the ability of raising a type $ A $ living in a universe $ Set_i $ to the universe $ Set_j $ when $ i < j $.\endnote{However, this feature can be enabled by a flag.}
  
@@ -393,15 +426,15 @@ Just like in Martin-L\"of Type Theory, \Agda{} features an infinite hierarchy of
 Given two types $ A : Set_i, B : Set_j $, with $ B $ possibly containing a free variable $ x $ of type $ A $, we can form the dependent product type $ (x : A) \to  B $ (the \Agda{} notation for $ \Pi x : A.B $) using the following rule, where $ \sqcup $ calculates the maximum between two levels.
 
 \begin{center} 
-  \AxiomC{$\Sigma; \Gamma \vdash A : Set_i $}
-  \AxiomC{$\Sigma; \Gamma, x : A \vdash B : Set_j $}  
-\BinaryInfC{$\Sigma;\Gamma \vdash (x : A) \to B : Set_{i \sqcup j}  $}
+  \AxiomC{$\Gamma \vdash A : Set_i $}
+  \AxiomC{$ \Gamma, x : A \vdash B : Set_j $}  
+\BinaryInfC{$\Gamma \vdash (x : A) \to B : Set_{i \sqcup j}  $}
 \DisplayProof
 \end{center}
 
 Finally, one of the main particularities of \textsc{Agda}, when compared with most proof assistants such as \textsc{Coq}, \textsc{HOL}, \textsc{Lean}, etc, is that \textsc{Agda}'s type system does not separate propositions from ``normal'' types. For instance, whereas in \textsc{Coq} the type $ \N $ of natural numbers lives in $ Set $ and the proposition true $ \top $ lives in $ Prop $, in \Agda{} both of them live in $ Set $\endnote{A hierarchy $ Prop $ of proof irrelevant types was recently added to \Agda{}, however the ``standard'' way of doing \Agda{} is to do everything with $ Set $. For instance, \Agda{}'s standard library do not use $ Prop$.}. An important consequence is that, whereas in \textsc{Coq} the lambda term $\lambda x : A. x $ can either be the identity function for $ A $ (if $ A : Set $) or a proof of $ A \Rightarrow A $ (if $ A : Prop $), in \textsc{Agda} the term $ \lambda x : A.x $ is both the identity and a proof of $ A \Rightarrow A $ at the same time. It all depends if we prefer to interpret $ A$ as a normal type or a type representing a proposition. Therefore, \textsc{Agda} implements a radical version of Curry-Howard, making absolutely no difference between types ans propositions. 
 
-\redbold{Inductive types, recursive functions and records}
+\subsubsection{Inductive types, recursive functions and records}
 
 Like most proof assistants, \Agda{} features inductive types. Though its presentation is mostly standard, its main peculiarity is that elimination principles are not defined explicitly. Rather, elimination from an inductive type is done by defining a recursive function with clauses (in a Haskell-like manner) which then needs to pass the language's termination and totality checkers.
 
@@ -492,7 +525,1072 @@ Another particularity of \Agda{} is that it also feature records, which are basi
 We note that the fields are also called projections, as they can be used as eliminators. For instance, the application $ \textsf{fst}~(a,b) $ for $ (a,b) : \Sigma~A~B $ reduces to the value of $ a $.
 
 
-\redbold{Universe polymorphism}
+
+
+
+\subsection{Agda2Dedukti: a practical translator into the $\boldsymbol  \lambda \boldsymbol \Pi $-calculus modulo rewriting}
+\label{sec:label}
+
+The problem of encoding the logic of \Agda{} in the $ \lambda \Pi $-calculus modulo rewriting was first treated by Guillaume Genestier, who started the development of \AgdaDedukti{}, a prototype translator\cite{guillaume}\cite{genes2020}. In this subsection we present a review of how the main parts of the encoding works. We also refer to the appendix x for more details.% In order to do so, he used techniques already known in the literature[x] to represent universes and inductive types, but he most notably proposed encodings of prenex universe polymorphism and eta conversion, two features whose representation in the $ \lambda \Pi $-calculus modulo rewriting was not known.  We present a quick review of how the encoding works.
+
+% Before starting, we first establish a convention on how we represent Dedukti encodings. First remember that declarations in Dedukti are either constants, which are added to the signature $ \Sigma $, or rewrite rules, which are added to $ \mathcal{R} $. Therefore, each declaration will be marked either by ($c $-decl), meaning that the constant $c$ is being added to the signature $ \Sigma $, or by ($ c $-red), meaning that a rewrite rule concerning the constant $ c $ is being added to $ \mathcal{R} $. We also enclose such declarations by two vertical black bars (as seen in the next page), to explicit that we are making a constant or rule declaration.
+
+Before starting, we adapt our convention on how to represent \Dedukti{} encodings and we introduce the color \ctg{green} to represent constants alongside \ctb{blue}. Now we declare in \ctb{blue} constants which encode the underling type theory of a system, so for instance as the hierarchy $ Set_0 : Set_1 : ... $ is primitive in the \Agda{} type system and cannot be removed, it will be represented by constants in blue. On the other hand, we use \ctg{green} to declare constants which correspond to definitions in an \Agda{} file and  which are not primitive in the system, but added by the user, such as the definition of natural numbers $ \ctg{\N} $ and the function plus $ \ctg{+} $.
+
+Variables and symbols which are primitive to the $ \lambda \Pi $-calculus modulo theory, such as  $x, A, M, \alpha, \lambda, \Pi, \to, \Type $ are still represented in black. We remind that, even thought the colors \ctb{blue} and \ctg{green} are also used in the \Agda, their meaning is completely different, and thus it is important to not mistake \Agda{} code with \Dedukti{} declarations. Finally, we allow ourselves to write some symbols in infix notation or to write some arguments as subscripts, when this simplifies the notation (see cases of $ \ctb{\sqcup} $ and $ \ctb{\leadsto} $ below).
+
+\subsubsection{Universes and type system}
+
+To represent the infinite hierarchy of universes $ Set_0 : Set_1 : Set_2 : ... $, we first declare a type of sorts and a function that associates to each sort the type of its terms. Therefore, each \Agda{} type $ A $ that lives in a sort or universe $ \alpha $ will be represented as a term in the type $ \ctb{U}~\alpha $.
+\dedukti{
+  &\ctb{Sort} : \Type& \text{($\ctb{Sort}$-decl)}\\
+  &\ctb{U} : \ctb{Sort} \to \Type& \text{($\ctb{U}$-decl)}
+}
+% \begin{center}\begin{tcolorbox}[blanker,left=3mm,right=3mm,
+%   borderline vertical={2pt}{0pt}{black}, text width=170mm]
+% \abovedisplayskip=0pt% <--- remove vertical space above align  
+%   \begin{flalign*}
+%   &\ctb{Sort} : \Type& \text{($\ctb{Sort}$-decl)}\\
+%   &\ctb{U} : \ctb{Sort} \to \Type& \text{($\ctb{U}$-decl)}
+%   \end{flalign*}
+% \end{tcolorbox}\end{center}
+% \begin{tcolorbox}[ams align*, blanker,left=3mm,right=3mm,
+%   borderline vertical={2pt}{0pt}{black}]
+%   &Sort : \Type& \text{oi}&\\
+%   &U : Sort \to \Type& \text{sssoiteste}&
+% \end{tcolorbox}
+% \begin{align*}
+%   &Sort : \Type\\
+%   &U : Sort \to \Type
+% \end{align*}
+Then we define a type $ L $ to represent universe levels (it would be more appropriated to call it $ \N $, but we reserve this name to the integers as represented in the theory). Finally, we can define the sorts $ Set_i $ by defining a function associating to each level a sort.
+\dedukti{
+  &\ctb{L} : \Type& \text{($\ctb{L}$-decl)}\\
+  &\ctb{z} : \ctb{L}& \text{($\ctb{z}$-decl)}\\
+  &\ctb{s} : \ctb{L} \to \ctb{L} &\text{($\ctb{s}$-decl)}\\
+  &\ctb{set} : \ctb{L} \to \ctb{Sort}  &  \text{($\ctb{set}$-decl)}
+}
+We can already represent some basic types, like is the case with integers with $ \ctg{\N} : \ctb{U}~(\ctb{Set}~\ctb{z}) $. However, to represent the elements that live in $ \ctg{\N} $ we need another function, taking a sort $ \alpha $ and a type $ A $ in $ \ctb{U}~\alpha $ and returning the type of elements of A.
+\dedukti{
+  &\ctb{El} : \Pi \alpha : \ctb{Sort}. U~\alpha \to \Type~~(\text{written as }\ctb{El}_\alpha)& \text{($\ctb{El}$-decl)}
+}
+
+Now we can declare $ \ctg{0} $ as an element of $ \ctb{El}_{\ctb{set}~\ctb{z}}~\ctg{\N} $. In Agda, we also have $ Set_i : Set_{i+1} $ for each $ i $, therefore we need to represent this on the encoding. To do so, we first define a function mapping each sort into its successor sort. Then we can declare a function mapping each sort $ \alpha $ on the corresponding object that lives in $ \ctb{\Box}~\alpha $. To properly identify the object $ \ctb{\Box}~\alpha $ with the sort $ \alpha $ we add a rewrite rule identifying their types.
+\dedukti{
+  &\ctb{\Box} :\ctb{Sort} \to \ctb{Sort} & \text{($\ctb{\Box}$-decl)}\\
+  &\ctb{\Box}~(\ctb{set}~i) \red \ctb{set}~(\ctb{s}~i)& \text{($\ctb{\Box}$-red)}\\
+  &\ctb{\diamond} : \Pi \alpha : \ctb{Sort}. \ctb{U}~(\ctb{\Box}~\alpha)& \text{($\ctb{\diamond}$-decl)}\\
+  &\ctb{El}~\_~(\ctb{\diamond}~\alpha) \red \ctb{U}~\alpha& \text{($\ctb{\diamond}$-red)}
+}
+The joker on the last rule represents a non used variable. As this is constraint by typing as being equal to $ \ctb{\Box}~\alpha $, we don't need to specify it. Finally it is only left to represent \Agda{} dependent products, such as $ (n : \N) \to n = n $. To do this, we first declare a constant calculating the max between two sorts. This function uses an auxiliary max function which operates on levels.
+\dedukti{
+  &\ctb{\sqcup} : \ctb{L} \to \ctb{L} \to \ctb{L}~~(\text{written infix})& \text{($\ctb{\sqcup}$-decl)}\\
+  &(\ctb{s}~x)~\ctb{\sqcup}~(\ctb{s}~y) \red \ctb{s}~(x~\ctb{\sqcup}~y)& \text{($\ctb{\sqcup}$-red)}\\
+  &\ctb{z}~\ctb{\sqcup}~x \red x& \text{($\ctb{\sqcup}$-red)}\\
+  &x~\ctb{\sqcup}~\ctb{z} \red x& \text{($\ctb{\sqcup}$-red)}\\
+  &\ctb{\lor} : \ctb{Sort} \to \ctb{Sort} \to \ctb{Sort}~~(\text{written infix}) & \text{($\ctb{\lor}$-decl)}\\
+  &(\ctb{set}~i)~\ctb{\lor}~(\ctb{set}~j) \red \ctb{set}~(i~\ctb{\sqcup}~j)& \text{($\ctb{\lor}$-red)}
+}
+Now we can define the constant representing products, which takes two sorts $ \alpha, \beta $, a type  $ A $ in $ \alpha $ and a function mapping each element of $ A $ to a type in $ \beta $.
+\dedukti{
+  &\ctb{\leadsto}~: \Pi (\alpha~\beta : \ctb{Sort}) (A : \ctb{U}~\alpha). (\ctb{El}_\alpha~A \to \ctb{U}~\beta) \to \ctb{U}~(\alpha~\ctb{\lor}~\beta)~~(\text{written infix as }{}_{\alpha}{\ctb{\leadsto}}_\beta)& \text{($\ctb{\leadsto}$-decl)}\\
+  &\ctb{El}_{\_}~(A~{}_{\alpha}{\ctb{\leadsto}}_\beta~B) \red \Pi x : \ctb{El}_\alpha~A. \ctb{El}_\beta~(B~x)& \text{($\ctb{\leadsto}$-red)}
+}
+For instance, if we want to represent $ refl : (n : \N) \to n=n $ we can declare the constant $ \ctg{refl} $ as living in \[
+\ctb{El}_{\ctb{set}~\ctb{z}}~(\ctg{\N}~{}_{(\ctb{set~z})}{\ctb{\leadsto}}_{(\ctb{set~z})}~(\lambda n : \ctb{El}_{\ctb{set~z}}~\ctg{\N}. n \ctg{=} n))
+\,,\]as the latter reduces to $ \Pi n : \ctb{El}_{\ctb{set~z}}~\ctg{\N}. \ctb{El}_{\ctb{set~z}}~(n\ctg{=}n) $. In this case we could ask ourselves why not define the type of $ \ctg{refl} $ directly as being $\Pi n : \ctb{El}_{\ctb{set~z}}~\ctg{\N}. \ctb{El}_{\ctb{set~z}}~(n\ctg{=}n)$. However, for a type to be in the image of the translation, it must be convertible to a type of the form $ \ctb{El}_\alpha~A $, for some $ \alpha, A $. Therefore, by writing it in this more complicated way, we explicit the fact that $\ctb{refl}$ lives in the translation of an \Agda{} type, and not just in some arbitrary type in \Dedukti{}.
+
+Nevertheless, as this encoding makes the presentation of the work a lot heavier, we will make a choice to simplify the notation on the next parts. Explicitly, we will write a product type such as  $\ctb{El}_{\alpha\ctb{\lor}\beta}~(A~{}_{\alpha}{\ctb{\leadsto}}_\beta~B)  $ directly as its normal form, and we will write $ \ctb{El}~A $ to represent $ \ctb{El}_{\ctb{set}~\ctb{z}}~A $. Therefore, the type $ \ctb{El}_{\ctb{set}~\ctb{z}}~(\ctg{\N}~{}_{(\ctb{set~z})}{\ctb{\leadsto}}_{(\ctb{set~z})}~(\lambda n : \ctb{El}_{\ctb{set~z}}~\ctg{\N}. n \ctg{=} n))
+$   of $ \ctg{refl} $ gets represented as $ \Pi n : \ctb{El}~\ctg{\N}. \ctb{El}~(n \ctg{=} n) $. However, this simplification is \underline{only for presentation purposes}, and is not used in practice in the real translation.
+
+\subsubsection{Inductive types and recursive functions}
+
+
+The representation of \Agda{}'s inductive types and recursive functions can be done in a very simple way. For each inductive definition, such as the one of natural numbers we declare a constant representing the type and one constant to represent each constructor.
+\dedukti{
+  &\ctg{\N} : \ctb{U}~(\ctb{set}~\ctb{z}) & \text{($\ctg{\N}$-decl)}\\
+  &\ctg{zero} : \ctb{El}~\ctg{\N}& \text{($\ctg{zero}$-decl)}\\
+  &\ctg{succ} : \ctb{El}~\ctg{\N} \to \ctb{El}~\ctg{\N} &\text{($\ctg{succ}$-decl)}
+}
+In order to translate a recursive function, such as the sum, we first declare a constant defining the function and we add a rewrite rule for each clause. Note that, as these rules are only fired when the left term corresponds to an instance of the constructor, when translating a terminating \Agda{} function, we obtain automatically a terminating set of rewrite rules.
+\dedukti{
+  & \ctg{+} : \ctb{El}~\ctg{\N} \to \ctb{El}~\ctg{\N} \to \ctb{El}~\ctg{\N} & \text{($\ctg{+}$-decl)}\\
+  & \ctg{zero} \ctg{+} y \red y& \text{($\ctg{+}$-red1)}\\
+  & (\ctg{succ}~x) \ctg{+} y \red \ctg{succ}~(x \ctg{+} y)& \text{($\ctg{+}$-red2)}
+}
+
+On the definition of the translated function $ + $, as there was no overlap between clauses, the translation was immediate. However, consider the following definition with overlapping clauses.
+
+\begin{code}
+\>[2]\AgdaFunction{test1}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Bool}\<%
+\\
+%
+\>[2]\AgdaFunction{test1}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{succ}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{true}\<%
+\\
+%
+\>[2]\AgdaCatchallClause{\AgdaFunction{test1}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}%
+\>[20]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{false}\<%
+\end{code}
+If we were to translate this definition naively we would have the following rewrite rules.
+\begin{align*}
+  &\ctg{test1}~(\ctg{succ}~\ctg{zero}) \red \ctg{true}\\
+  &\ctg{test1}~\_ \red \ctg{false}
+\end{align*}
+However, because rewrite rules have no priority order, in this system we would have both $ \ctg{test1}~(\ctg{succ}~\ctg{zero}) \red \ctg{true} $ and $ \ctg{test1}~(\ctg{succ}~\ctg{zero}) \red \ctg{false} $. In order to solve this problem we must make sure that the reduction respects the semantics of \Agda, meaning that we can only move to the next clause when we are sure that there is no possible match with the current one.
+
+Fortunately, \Agda{}'s internal coverage check, which is used to check totality of clauses, also compiles them into a non-overlapping set of clauses. For instance, by translating the clauses produced by the coverage check, we obtain the following rewrite rules for the function $ test1 $. This allows the translation of functions to correctly reflect the semantics of their definitions in \Agda.
+\begin{align*}
+  &\ctg{test1}~\ctg{zero} \red \ctg{false}\\  
+  &\ctg{test1}~(\ctg{succ}~\ctg{zero}) \red \ctg{true}\\
+  &\ctg{test1}~(\ctg{succ}~(\ctg{succ}~\_)) \red \ctg{false}
+\end{align*}
+
+
+\section{Representing Coinduction in the $ \boldsymbol \lambda \boldsymbol \Pi $-calculus modulo rewriting}
+\label{sec:encode}
+
+
+As seen on the subsection about coinduction, the interesting point of this technique is being able to reason about objects which are possibly infinite. Obviously, this raises a problem when trying to implement coinduction in proof assistants, as terms must always be finite. This question is normally addressed by resorting to lazy representations of elements of coinductive types. This means that the infinite terms are never represented in their entirety, but can be developed an arbitrary amount of times, when required by the user.
+
+% For instance, in the case of \textsc{Coq}, one can define the function $ natStream $ by the clause \[
+%   natStream~n = n :: (natStream~(n + 1))
+%   \,,\] but the term $ natStream~n $ will never reduce by itself to $ n :: (natStream~(n+1)) $, as this would be non-terminating. Rather, \textsc{Coq} imposes the condition that $ natStream~n $ will reduce only when being discriminated by a match.
+
+In the $ \lambda \Pi $-calculus modulo rewriting, it is clear that trying to define the function $ natStream $ naively by \[
+  natStream~n \red n :: (natStream~(succ~n))
+\]would not work, as rewriting rules can be fired without any checks if the computation is really necessary. Therefore, we need to find a smarter way to control rewriting in this setting. In this section we will explore how this is handled in the case of \Agda{} and we will see how such ideas can be reused in our setting, allowing to represent coinduction and to translate \Agda{} proofs.
+
+
+
+\subsection{Coinduction in Agda}
+\label{subsec:coind-agda}
+
+
+
+Coinduction in \Agda{} features two presentations: musical coinduction\cite{agda}, which is the old way of using coinduction in \Agda, and copattern matching coinduction\cite{copattern}, which is nowadays considered the standard. Both presentations try to solve the non-termination problem presented when introducing coinduction.
+
+\subsubsection{Musical Coinduction}
+
+Musical coinduction addresses this problem by introducing the following control operators, which control explicitly the evaluation of the corecursive calls. The constant $ \infty $ associates to each type $ A $ the type $ \infty~A $ of halted computations, whereas the operators $ \sharp $ and $ \flat $, also known as thunk and force, allow respectively to halt a computation and to resume it.
+   \begin{code}
+\>[2][@{}l@{\AgdaIndent{0}}]%
+\>[4]\AgdaPostulate{$ \infty $}%
+\>[7]\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\\
+%
+\>[4]\AgdaPostulate{$ \sharp $}
+\>[7]\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaPostulate{$ \infty $}\AgdaSpace{}%
+\AgdaBound{A}\<%
+\\
+%
+\>[4]\AgdaPostulate{$ \flat $}
+\>[7]\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaPostulate{$ \infty $}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{A}\<%
+\end{code}
+To define the coinductive type of streams using musical coinduction we use the following declaration. 
+
+\begin{code}
+\>[2]\AgdaKeyword{data}\AgdaSpace{}%
+\AgdaDatatype{Stream}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSpace{}%
+\AgdaKeyword{where}\<%
+\\
+\>[2][@{}l@{\AgdaIndent{0}}]%
+\>[4]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}::\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{xs}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaRecord{$ \infty $}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{Stream}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Stream}\AgdaSpace{}%
+\AgdaBound{A}\<%
+\\
+\>[2][@{}l@{\AgdaIndent{0}}]%
+\>[4]\AgdaOperator{\AgdaInductiveConstructor{$ [] $}}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Stream}\AgdaSpace{}%
+\AgdaBound{A}\<%
+\end{code}
+The main particularity here is that the corecursive argument of the constructor $ \_::\_ $ now takes a halted computation of type $ Stream~A $. Therefore, to define the curecursive function $ natStream $ we need to use the $ \sharp $ operator to halt the computation of $ natStream~(n+1) $. As terms do not reduce under the $ \sharp $, this definition is terminating.
+
+\begin{code}
+\>[2]\AgdaFunction{natStream}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Stream}\AgdaSpace{}%
+\AgdaDatatype{Nat}\<%
+\\
+%
+\>[2]\AgdaFunction{natStream}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{::}}\AgdaSpace{}%
+\AgdaOperator{\AgdaCoinductiveConstructor{$ \sharp $}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{natStream}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{succ}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{))}\AgdaSpace{}%
+\end{code}
+
+A halted calculation can be resumed by the symbol $ \flat $, as expressed by the identity $ \flat~(\sharp~x) = x $. Using this symbol we can define for instance a function which, given a position $ n $, takes the $ n $-th element of the  stream, if it exists. In order to do this, we first need to introduce the type constructor $ Maybe $, used when defining partial functions. Its constructors tell us that a value of type $ Maybe~A $ is either a value of $ A $ or nothing.
+\begin{code}
+\>[2]\AgdaKeyword{data}\AgdaSpace{}%
+\AgdaDatatype{Maybe}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSpace{}%
+\AgdaKeyword{where}\<%
+\\
+\>[2][@{}l@{\AgdaIndent{0}}]%
+\>[4]\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Maybe}\AgdaSpace{}%
+\AgdaBound{A}\<%
+\\
+%
+\>[4]\AgdaInductiveConstructor{nothing}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Maybe}\AgdaSpace{}%
+\AgdaBound{A}\<%
+\end{code}
+We can now proceed to the definition of the function $ n $-th. At each step, if the position we are looking for is zero we simply return the head, otherwise we resume the computation of the tail (using the $ \flat $ operator) and we do a recursive call on it. If at any point we reach the end of the stream (as streams here are only possibly infinite, and not always), we return nothing to signal that the searched element does not exist. We note that, in opposition to $ natStream $, which is defined by corecursion, $ nth $ is defined by recursion on its first argument.
+
+\begin{code}
+\>[2]\AgdaFunction{nth}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Stream}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Maybe}\AgdaSpace{}%
+\AgdaDatatype{Nat}\<%
+\\
+%
+\>[2]\AgdaFunction{nth}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{hd}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{$ :: $}}\AgdaSpace{}%
+\AgdaBound{tl}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaBound{hd}\<%
+\\
+%
+\>[2]\AgdaFunction{nth}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{succ}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{hd}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{$ :: $}}\AgdaSpace{}%
+\AgdaBound{tl}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{nth}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{$ \flat $}\AgdaSpace{}%
+\AgdaBound{tl}\AgdaSymbol{)}\<%
+\\
+%
+\>[2]\AgdaCatchallClause{\AgdaFunction{nth}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaInductiveConstructor{[]}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{nothing}\<%
+\end{code}
+
+\subsubsection{Copattern matching coinduction}
+
+Even though musical coinduction solves the problem of non-termination, it is clear that it is not very intuitive to use, as the user needs to control explicitly how calculations are halted and resumed, which requires some experience. Abel \textit{et al} introduced in \cite{copattern} a different presentation of coinduction through copattern matching. The main idea here is to restrict ourselves to one constructor coinductive types expressed as records and then define each element not through constructors but rather through their eliminators, or projections.
+
+For instance, if we consider the coinductive type of streams defined only by the constructor $ \_::\_ : A \to Stream~A \to Stream~A$ (therefore only containing infinite streams), we can express it by the following definition. Note that coinductive records must be marked with a the coinductive flag, as shown.
+
+\begin{code}
+\>[2]\AgdaKeyword{record}\AgdaSpace{}%
+\AgdaRecord{Stream}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSpace{}%
+\AgdaKeyword{where}\<%
+\\
+\>[2][@{}l@{\AgdaIndent{0}}]%
+\>[4]\AgdaKeyword{coinductive}\<%
+\\
+%
+\>[4]\AgdaKeyword{field}\<%
+\\
+\>[4][@{}l@{\AgdaIndent{0}}]%
+\>[6]\AgdaField{hd}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaBound{A}\<%
+\\
+%
+\>[6]\AgdaField{tl}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaRecord{Stream}\AgdaSpace{}%
+\AgdaBound{A}\<%
+\end{code}
+
+We can then define corecursive functions by copattern matching by defining how the value produced by the function reduces when eliminated through each one of the record's projections. For instance, in order to define $ natStream : \N \to Stream~\N$ we must explain how $ natStream~n $ reduces when we inspect the fields $ hd $ and $ tl $. Note that, as the term $ natStream~(n+1) $ does not reduced by itself, but only when eliminated through a projection, this system is terminating. 
+
+\begin{code}
+\>[2]\AgdaFunction{natStream}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaRecord{Stream-Nat}
+\\
+%
+\>[2]\AgdaField{hd}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{natStream}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{n}\<%
+\\
+%
+\>[2]\AgdaField{tl}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{natStream}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{natStream}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{succ}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+\end{code}
+
+In order to compare both presentations of coinduction, we can also look at how the $ n $-th function can be defined in this setting. Note that as $ n $-th is defined by recursion (in its first argument), and not by corecursion, it uses projections in a fundamentally different way from $ natStream $. Whereas $ natStream $ uses them to explain how the value of the function reduces, $ n $-th uses projections in order to access the fields of the stream $ st $, which is given as second argument. Also note a very important change here, when comparing with the function $ n $-th defined for musical coinduction: because with copattern matching coinduction we only have coinductive types with one constructor, which in this case is the constructor $ \_::\_ $, then all streams are infinite in this case, and thus this function can be total.
+
+  \begin{code}
+\>[2]\AgdaFunction{nth}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaRecord{Stream}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Nat}\<%
+\\
+%
+\>[2]\AgdaFunction{nth}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaBound{st}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaField{hd}\AgdaSpace{}%
+\AgdaBound{st}\<%
+\\
+%
+\>[2]\AgdaFunction{nth}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{succ}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{st}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{nth}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{tl}\AgdaSpace{}%
+\AgdaBound{st}\AgdaSymbol{)}\<%
+\end{code}
+
+
+We remark that whereas both musical and copattern matching coinduction solve the problem of non-termination, when using copattern matching coinduction we do not have to deal with control operators, and thus we have a much more natural and user-friendly way of using coinduction.
+
+A last remark is that, even though in \Agda{} most records enjoy eta-conversion (more details on that in appendix x), this is disabled for coinductive records, as it can lead to non-termination issues. Indeed, if we were to try to eta-expand $ natStream~0 $ we would have the infinite unraveling \[
+  natStream~0 \red Record\{hd=0; tl=natStream~1\} \red Record\{hd=0; tl=Record\{hd=1; tl=natStream~2\}\} \red ...
+  \,,\]where $ Record $ is the generic constructor for records.
+
+% \subsubsection{Synctactic characterisation of productivity}
+
+% When discussing the syntactic characterisation of coinduction in subsection x, we saw that the definition of coinductive functions had to follow a certain pattern. Namely, the body of the function must be directly equal to an instance on a constructor, which then should guard any corecursive call, as is the case in \[
+%   natStream~n = n :: (natStream~(n + 1))
+%   \,.\]
+
+% This syntactic criterion is enforced by Agda in order to guarantee that the function is productive. For instance, the previous definition of $ natStream $ given on the setting of musical coinduction follows this criterion, but the following definition of the function $ filter $ on streams gets rejected, as the body of the first clause is not directly equal to an instance of a constructor. 
+
+% \begin{code}
+% \>[2]\AgdaFunction{filter}\AgdaSpace{}%
+% \AgdaSymbol{:}\AgdaSpace{}%
+% \AgdaSymbol{\{}\AgdaBound{A}\AgdaSpace{}%
+% \AgdaSymbol{:}\AgdaSpace{}%
+% \AgdaPrimitiveType{Set}\AgdaSymbol{\}}\AgdaSpace{}%
+% \AgdaSymbol{→}\AgdaSpace{}%
+% \AgdaSymbol{(}\AgdaBound{A}\AgdaSpace{}%
+% \AgdaSymbol{→}\AgdaSpace{}%
+% \AgdaDatatype{Bool}\AgdaSymbol{)}\AgdaSpace{}%
+% \AgdaSymbol{→}\AgdaSpace{}%
+% \AgdaDatatype{Stream}\AgdaSpace{}%
+% \AgdaBound{A}\AgdaSpace{}%
+% \AgdaSymbol{→}\AgdaSpace{}%
+% \AgdaDatatype{Stream}\AgdaSpace{}%
+% \AgdaBound{A}\<%
+% \\
+% %
+% \>[2]\AgdaFunction{filter}\AgdaSpace{}%
+% \AgdaBound{f}\AgdaSpace{}%
+% \AgdaSymbol{(}\AgdaBound{hd}\AgdaSpace{}%
+% \AgdaOperator{\AgdaInductiveConstructor{$ :: $}}\AgdaSpace{}%
+% \AgdaBound{tl}\AgdaSymbol{)}\AgdaSpace{}%
+% \AgdaSymbol{=}\AgdaSpace{}%
+% \AgdaOperator{\AgdaFunction{if}}\AgdaSpace{}%
+% \AgdaSymbol{(}\AgdaBound{f}\AgdaSpace{}%
+% \AgdaBound{hd}\AgdaSymbol{)}\AgdaSpace{}%
+% \AgdaOperator{\AgdaFunction{then}}\AgdaSpace{}%
+% \AgdaSymbol{(}\AgdaBound{hd}\AgdaSpace{}%
+% \AgdaOperator{\AgdaInductiveConstructor{$ :: $}}\AgdaSpace{}%
+% \AgdaOperator{\AgdaCoinductiveConstructor{$\sharp$}}\AgdaSpace{}%
+% \AgdaSymbol{(}\AgdaFunction{filter}\AgdaSpace{}%
+% \AgdaBound{f}\AgdaSpace{}%
+% \AgdaSymbol{(}\AgdaField{$ \flat $}\AgdaSpace{}%
+% \AgdaBound{tl}\AgdaSymbol{)))}\AgdaSpace{}%
+% \AgdaOperator{\AgdaFunction{else}}\AgdaSpace{}%
+% \AgdaSymbol{(}\AgdaFunction{filter}\AgdaSpace{}%
+% \AgdaBound{f}\AgdaSpace{}%
+% \AgdaSymbol{(}\AgdaField{$ \flat $}\AgdaSpace{}%
+% \AgdaBound{tl}\AgdaSymbol{))}\<%
+% \\
+% %
+% \>[2]\AgdaFunction{filter}\AgdaSpace{}%
+% \AgdaBound{f}\AgdaSpace{}%
+% \AgdaInductiveConstructor{[]}\AgdaSpace{}%
+% \AgdaSymbol{=}\AgdaSpace{}%
+% \AgdaInductiveConstructor{[]}\<%
+% \end{code}
+
+% It is easy to see why this function cannot be accepted, as by supplying a function that is false everywhere and a stream which is infinite we get a calculation that never stops. However, this criterion is also sometimes too restrictive, and does not detect all productive functions. For instance, the following implementation of $ natStream $ is extensionally equal to the one previously presented, however it gets rejected by \Agda{} because the corecursive call is not a direct argument to the constructor (we also say that it is not guarded by a constructor). In order to remedy this \Agda{} also allows the use of \textit{sized types} to show productivity, however as this is not the focus of this work we will not discuss them here.
+
+% \begin{code}
+% \>[2]\AgdaFunction{natStream-fail}\AgdaSpace{}%
+% \AgdaSymbol{:}\AgdaSpace{}%
+% \AgdaDatatype{Nat}\AgdaSpace{}%
+% \AgdaSymbol{→}\AgdaSpace{}%
+% \AgdaDatatype{Stream}\AgdaSpace{}%
+% \AgdaDatatype{Nat}\<%
+% \\
+% %
+% \>[2]\AgdaFunction{natStream-fail}\AgdaSpace{}%
+% \AgdaBound{n}\AgdaSpace{}%
+% \AgdaSymbol{=}\AgdaSpace{}%
+% \AgdaBound{n}\AgdaSpace{}%
+% \AgdaOperator{\AgdaInductiveConstructor{::}}\AgdaSpace{}%
+% \AgdaSymbol{(}\AgdaOperator{\AgdaFunction{if}}\AgdaSpace{}%
+% \AgdaInductiveConstructor{true}\AgdaSpace{}%
+% \AgdaOperator{\AgdaFunction{then}}\AgdaSpace{}%
+% \AgdaOperator{\AgdaCoinductiveConstructor{$\sharp$}}\AgdaSpace{}%
+% \AgdaSymbol{(}\AgdaFunction{natStream-fail}\AgdaSpace{}%
+% \AgdaBound{(n+1)}\AgdaSymbol{)}\AgdaSpace{}%
+% \AgdaOperator{\AgdaFunction{else}}\AgdaSpace{}%
+% \AgdaOperator{\AgdaCoinductiveConstructor{$\sharp$}}\AgdaSpace{}%
+% \AgdaSymbol{(}\AgdaFunction{natStream-fail}\AgdaSpace{}%
+% \AgdaBound{(n+1)}\AgdaSymbol{))}\<%
+% \end{code}
+
+
+% This syntactic criterion is also enforced when using copattern matching coinduction. However, as in this setting corecursive functions are defined through projections, the body of the function is already always equal to an instance of the only constructor. For instance, a corecursive definition producing a stream and defined by copattern matching as $ hd~(f~\vec{x}) = y_{hd} $, $ tl~(f~\vec{x})= y_{tl}$ can always be reassembled into an instance of the constructor as $f~\vec{x} =  y_{hd} :: y_{tl} $. This rules out functions like $ filter $, as we can see that there is no way of writing them in this setting.
+
+% Therefore, the only restriction in this case is that the term $ y_{tl} $ must start with a corecursive call. For instance, the definition of $ natStream $ that we gave when presenting copattern matching coinduction satisfies this criteria, as the clause defining the tail is defined by \[
+% tl~(natStream~n) = natStream~(n+1)
+% \] and thus starts with a corecursive call. However, by reusing the same idea as the one used on the implementation of $ natStream$-$fail $, we can build the following function, which does not satisfy the criteria and is therefore rejected, even thought it is productive. 
+
+% \begin{code}
+%   \>[2]\AgdaFunction{natStream-fail}\AgdaSpace{}%
+% \AgdaSymbol{:}\AgdaSpace{}%
+% \AgdaDatatype{Nat}\AgdaSpace{}%
+% \AgdaSymbol{→}\AgdaSpace{}%
+% \AgdaRecord{Stream}\AgdaSpace{}%
+% \AgdaDatatype{Nat}\<%
+% \\
+% %
+% \>[2]\AgdaField{hd}\AgdaSpace{}%
+% \AgdaSymbol{(}\AgdaFunction{natStream-fail}\AgdaSpace{}%
+% \AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+% \AgdaSymbol{=}\AgdaSpace{}%
+% \AgdaBound{n}\<%
+% \\
+% %
+% \>[2]\AgdaField{tl}\AgdaSpace{}%
+% \AgdaSymbol{(}\AgdaFunction{natStream-fail}\AgdaSpace{}%
+% \AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+% \AgdaSymbol{=}%
+% \>[22]\AgdaOperator{\AgdaFunction{if}}\AgdaSpace{}%
+% \AgdaInductiveConstructor{true}\AgdaSpace{}%
+% \AgdaOperator{\AgdaFunction{then}}\AgdaSpace{}%
+% \AgdaSymbol{(}\AgdaFunction{natStream-fail}\AgdaSpace{}%
+% \AgdaBound{(n+1)}\AgdaSymbol{)}\AgdaSpace{}%
+% \AgdaOperator{\AgdaFunction{else}}\AgdaSpace{}%
+% \AgdaSymbol{(}\AgdaFunction{natStream-fail}\AgdaSpace{}%
+% \AgdaBound{(n+1)}\AgdaSymbol{)}\<%
+% \end{code}
+
+\subsection{Coinduction in the $ \boldsymbol \lambda \boldsymbol \Pi $-calculus modulo rewriting}
+\label{subsec:coind}
+
+Now that we have seen the basis of coinduction in \Agda{}, we look at how we can encode such types and definitions in \Dedukti{}. Very fortunately, \Agda{}'s internal representation of terms already provides a representation which was easily adapted to our setting, so we use that as a basis for our encoding in \Dedukti{}.
+
+Even thought copattern-matching coinduction is the main one used nowadays, we also chose to cover musical coinduction, as both presentations teach us interesting ideas of how coinduction can be represented, which can be applied in the future to translate coinduction in other proof assistants.
+
+
+We reuse the same conventions established in X to represent \Dedukti{} definitions. However, we will also use a superscript as in $ \ctg{A^{\eighthnote}} $ when translating the musical version of $ A $ and as in $ \ctg{A^{co}} $ when translating the copattern matching version of $ A $, in order to separate very explicitly both cases.
+
+\subsubsection{Musical coinduction}
+
+To encode musical coinduction, we first start by declaring constants for the control operators. Note that there is no constant for $ \sharp $ in the translation, as we will explain after.
+\dedukti{
+  &\ctb{\infty} : \ctb{U}~(\ctb{Set}~\ctb{z}) \to \ctb{U}~(\ctb{Set}~\ctb{z}) & \text{($\ctb{\infty}$-decl)}\\
+  &\ctb{\flat} : \Pi A : \ctb{U}~(\ctb{Set}~\ctb{z}). \ctb{El}~(\ctb{\infty}~A) \to \ctb{El}~A~~(\text{written as }\ctb{\flat}_A) & \text{($\ctb{\flat}$-decl)}
+  }
+In order to encode a coinductive type declaration, we proceed the same as when encoding an inductive type. We first declare a constant to define the type itself and then we declare constants to define the constructors of the type. For instance, to define the type $ Stream $ we define following constants, the first representing the declaration of the type, and the last two the declaration of the constructors.
+\dedukti{
+  &\ctg{Stream^{\eighthnote}} : \ctb{U}~(\ctb{Set}~\ctb{z}) \to \ctb{U}~(\ctb{Set}~\ctb{z}) & \text{($\ctg{Stream^{\eighthnote}}$-decl)}\\
+  &\ctg{::} : \Pi A : \ctb{U}~(\ctb{Set}~\ctb{z}).\ctb{El}~A \to \ctb{El}~(\ctb{\infty}~(\ctg{Stream^{\eighthnote}}~A)) \to \ctb{El}~(\ctg{Stream^{\eighthnote}}~A)~~(\text{written infix as }\ctg{::}_A)& \text{($\ctg{::}$-decl)}\\
+  &\ctg{[]} : \Pi A : \ctb{U}~(\ctb{Set}~\ctb{z}).\ctb{El}~(\ctg{Stream^{\eighthnote}}~A)~~(\text{written as }\ctg{[]}_A)& \text{($\ctg{[]}$-decl)}
+}  
+This generalizes the encoding of inductive types and is fairly straightforward, but the interesting part comes when encoding corecursive functions. If we were to define a constant $ \ctb{\sharp}_A $, as done with $ \ctb{\flat}_A $, and translate the definitions directly, we would have the following definition for $\ctg{natStream^{\eighthnote}} $.
+\dedukti{
+  &\ctg{natStream^{\eighthnote}} : \ctb{El}~\ctg{\N} \to \ctb{El}~(\ctg{Stream^{\eighthnote}}~\ctg{\N})& \text{($\ctg{natStream^{\eighthnote}}$-decl)}\\
+  &\ctg{natStream^{\eighthnote}}~n \red n~\ctg{::}_{\ctg{\N}}~(\ctb{\sharp}_{\ctg{\N}}~(\ctg{natStream^{\eighthnote}}~(\ctg{succ}~n)))& \text{($\ctg{natStream^{\eighthnote}}$-red)}
+  }
+However, in this setting we cannot forbid reductions which happen under a $ \ctb{\sharp}_A $ sign, as done in the semantics of \Agda. This means that this rule causes non-termination, as we have the infinite chain \[
+\ctg{natStream^{\eighthnote}}~n \red n~\ctg{::}_{\ctg{\N}}~(\ctb{\sharp}_{\ctg{\N}}~(\ctg{natStream^{\eighthnote}}~(\ctg{succ}~n))) \red n~\ctg{::}_{\ctg{\N}}~(\ctb{\sharp}_{\ctg{\N}}~((\ctg{succ}~n)~\ctg{::}_{\ctg{\N}}~(\ctb{\sharp}_{\ctg{\N}}~(\ctg{natStream^{\eighthnote}}~(\ctg{succ}~(\ctg{succ}~n)))))) \red ...
+  \,.\]
+
+Therefore, we do not proceed like this. Instead, we apply the idea also used in the internal syntax representation of \Agda{} to represent a function using two versions. In the case of $ natStream $ we have the following declarations.
+\dedukti{
+  &\ctg{natStream^{\eighthnote}} : \ctb{El}~\ctg{\N} \to \ctb{El}~(\ctg{Stream^{\eighthnote}}~\ctg{\N})& \text{($\ctg{natStream^{\eighthnote}}$-decl)}\\
+  &\ctg{\sharp\text{-}natStream^{\eighthnote}} : \ctb{El}~\ctg{\N} \to \ctb{El}~(\ctg{\infty}~(\ctg{Stream^{\eighthnote}}~\ctg{\N}))& \text{($\ctg{\sharp\text{-}natStream^{\eighthnote}}$-decl)}
+  }
+The idea here is that each corecursive function will have its halted version, which we can use in corecursive calls without non-termination problems. In this setting, an application of $ \sharp $ to a corecursive call is translated into the halted version of it. For instance, to finish the definition of $ \ctg{natStream^{\eighthnote}} $ we declare the following rewrite rules.
+\dedukti{
+  &\ctg{natStream^{\eighthnote}}~n\red n~\ctg{::}_{\ctg{\N}}~(\ctg{\sharp\text{-}natStream^{\eighthnote}}~(\ctg{succ}~n))& \text{($\ctg{natStream^{\eighthnote}}$-red)}\\
+  &\ctb{\flat}_{\ctg{\N}}~(\ctg{\sharp\text{-}natStream^{\eighthnote}}~n) \red \ctg{natStream^{\eighthnote}}~n& \text{($\ctg{\sharp\text{-}natStream^{\eighthnote}}$-red)}
+  }
+The first rewrite rule corresponds to the definition of the function, whereas the second allows to transform the halted version of the function into a computing one, through the $ \ctg{\flat} $ symbol. Note that, as $ \ctg{\sharp \text{-} natStream^{\eighthnote}}~(\ctg{succ}~n) $ does not reduce by itself, but only when under a $ \ctg{\flat} $, these rewrite rules are terminating.
+
+\subsubsection{Copattern matching coinduction}
+
+Whereas the encoding of musical coinduction needs the duplication of function symbols in order to eliminate the $ \sharp $ operator, we will see that copattern matching coinduction admits a much simple encoding, as we can obtain terminating corecursive definitions by just orienting the clauses defining corecursive functions.
+
+Firs, in order to encode a coinductive type declaration, we declare once again a constant to represent the type. However, instead of declaring constants to define the constructors, we now declare constants to define the projections. The type $ Stream^{co} $ can for instance be represented by the following constants.
+\dedukti{
+  &\ctg{Stream^{co}} : \ctb{U}~(\ctb{set}~\ctb{z}) \to \ctb{U}~(\ctb{set}~\ctb{z})& \text{($\ctg{Stream^{co}}$-decl)}    \\
+  &\ctg{hd} : \Pi A : \ctb{U}~(\ctb{set}~\ctb{z}). \ctb{El}~(\ctg{Stream^{co}}~A) \to \ctb{El}~A~~(\text{written as }\ctg{hd}_A)& \text{($\ctg{hd}$-decl)}\\
+ &\ctg{tl} : \Pi A : \ctb{U}~(\ctb{set}~\ctb{z}). \ctb{El}~(\ctg{Stream^{co}}~A) \to \ctb{El}~(\ctg{Stream^{co}}~A)~~(\text{written as }\ctg{tl}_A)& \text{($\ctg{tl}$-decl)}  
+}  
+Now corecursive functions can be translated by declaring a constant to represent the function and adding rewriting rules corresponding to the clauses. In the case of $ natStream $ we have the following declarations.
+\dedukti{
+  &\ctg{natStream^{co}} : \ctb{El}~\ctg{\N} \to \ctb{El}~(\ctg{Stream^{co}~\N})& \text{($\ctg{natStream^{co}}$-decl)}    \\
+  &\ctg{hd}_{\ctg{\N}}~(\ctg{natStream^{co}}~n) \red n & \text{($\ctg{natStream^{co}}$-red1)}    \\
+  &\ctg{tl}_{\ctg{\N}}~(\ctg{natStream^{co}}~n) \red \ctg{natStream^{co}}~(\ctg{succ}~n)& \text{($\ctg{natStream^{co}}$-red2)}   
+}  
+
+Note that, as no rewrite rule allows to reduce $ \ctg{natStream^{co}}~(\ctg{succ}~n) $ by itself, the defined rewrite rules are terminating. 
+
+\subsection{Examples on translating coinduction}
+\label{subsec:label}
+
+
+In order to understand how  the encoding generalizes for other cases, we consider a series of examples.
+
+\subsubsection{Taking the $ n $-th element of a stream}
+
+We start with the function $ n $-th, which was already discussed for both presentations of coinduction. To translate the version using musical coinduction we first need to translate the inductive type constructor $ Maybe $. We proceed as usual, declaring one constant to encode the type and one constant for each constructor.
+\dedukti{
+  &\ctg{Maybe} : \ctb{U}~(\ctb{Set}~\ctb{z}) \to \ctb{U}~(\ctb{Set}~\ctb{z}) & \text{($\ctg{Maybe}$-decl)}\\
+  &\ctg{just} : \Pi A : \ctb{U}~(\ctb{Set}~\ctb{z}).\ctb{El}~A \to \ctb{El}~(\ctg{Maybe}~A)~~(\text{written as }\ctg{just}_A)& \text{($\ctg{just}$-decl)}\\
+  &\ctg{nothing} : \Pi A : \ctb{U}~(\ctb{Set}~\ctb{z}).\ctb{El}~(\ctg{Maybe}~A)~~(\text{written as }\ctg{nothing}_A)& \text{($\ctg{nothing}$-decl)}
+}  
+
+In order to encode $ n $-th, we declare only one constant to represent the function, and then the expected rewrite~rules. Even thought we saw that the translation of corecursive functions written with musical coinduction uses two~constant declarations, $ n $-th is not corecursive but recursive, and as such admits a straightforward representation with just one~constant.
+\dedukti{
+  &\ctg{n\text{-}th^{\eighthnote}} : \ctb{El}~\ctg{\N} \to \ctb{El}~(\ctg{Stream^{\eighthnote}}~\ctg{\N}) \to \ctb{El}~(\ctg{Maybe}~\ctg{\N})& \text{($\ctg{n\text{-}th^{\eighthnote}}$-decl)}\\
+  &\ctg{n\text{-}th^{\eighthnote}}~\ctg{zero}~(x~\ctg{::}_{\ctg{\N}}~l)~\red \ctg{just}_{\ctg{\N}}~x& \text{($\ctg{n\text{-}th^{\eighthnote}}$-red1)}\\  
+  &\ctg{n\text{-}th^{\eighthnote}}~(\ctg{succ}~n)~(x~\ctg{::}_{\ctg{\N}}~l)~\red \ctg{n\text{-}th^{\eighthnote}}~n~(\ctb{\flat}_{\ctg{\N}}~l)& \text{($\ctg{n\text{-}th^{\eighthnote}}$-red2)}\\
+  &\ctg{n\text{-}th^{\eighthnote}}~\_~\ctg{[]}_{\ctg{\N}}~\red \ctg{nothing}_{\ctg{\N}}& \text{($\ctg{n\text{-}th^{\eighthnote}}$-red3)}
+  }
+  In order to test the definitions of $ \ctg{n\text{-}th^{\eighthnote}} $ and $ \ctg{natStream^{\eighthnote}} $ we can try to compute the normal form of $ \ctg{n\text{-}th^{\eighthnote}}~\ctg{1}~(\ctg{natStream^{\eighthnote}}~\ctg{6}) $, where we write numerals in decimal notation to simplify the presentation. This gives the following rewrite sequence, which computes to the value $ \ctg{just}_{\ctg{\N}}~\ctg{7} $ as expected.
+  \begin{align*} 
+&&   \ctg{n\text{-}th^{\eighthnote}}~\ctg{1}~(\ctg{natStream^{\eighthnote}}~\ctg{6}) &\red \ctg{n\text{-}th^{\eighthnote}}~\ctg{1}~(\ctg{6}~\ctg{::}_{\ctg{\N}}~(\ctg{\sharp\text{-}natStream^{\eighthnote}}~\ctg{7}))&&\text{by ($\ctg{natStream^{\eighthnote}}$-red)}&\\
+  &&                                          &\red \ctg{n\text{-}th^{\eighthnote}}~\ctg{0}~(\ctb{\flat}_{\ctg{\N}}~(\ctg{\sharp\text{-}natStream^{\eighthnote}}~\ctg{7})) &&\text{by ($\ctg{n\text{-}th^{\eighthnote}}$-red2)}&\\
+&&                                            &\red \ctg{n\text{-}th^{\eighthnote}}~\ctg{0}~(\ctg{natStream^{\eighthnote}}~\ctg{7}) &&\text{by ($\ctb{\flat}$-red)}&\\
+  &&                                          &\red \ctg{n\text{-}th^{\eighthnote}}~\ctg{0}~(\ctg{7}~\ctg{::}_{\ctg{\N}}~(\ctg{\sharp\text{-}natStream^{\eighthnote}}~\ctg{8}))&&\text{by ($\ctg{natStream^{\eighthnote}}$-red)}&\\
+    &&                                        &\red \ctg{just}_{\ctg{\N}}~\ctg{7}&&\text{by ($\ctg{n\text{-}th^{\eighthnote}}$-red1)}&
+  \end{align*}
+
+  We can also look at the translation of $ n\text{-}th $ when using copattern-matching coinduction. Once again, as this is a recursive function, and not a corecursive one, this is represented in \Dedukti{} just like other recursive functions.
+  \dedukti{
+    &\ctg{n\text{-}th^{co}} : \ctb{El}~\ctg{\N} \to \ctb{El}~(\ctg{Stream^{co}}~\ctg{\N}) \to \ctb{El}~\ctg{\N}& \text{($\ctg{n\text{-}th^{co}}$-decl)}\\
+    &\ctg{n\text{-}th^{co}}~\ctg{zero}~x \red \ctg{hd}_{\ctg{\N}}~x& \text{($\ctg{n\text{-}th^{co}}$-red1)}\\
+    &\ctg{n\text{-}th^{co}}~(\ctg{succ}~n)~x \red \ctg{n\text{-}th^{co}}~n~(\ctg{tl}_{\ctg{\N}}~x)&\text{($\ctg{n\text{-}th^{co}}$-red2)}
+  }
+  Once again, we can compute the normal form of $ \ctg{n\text{-}th^{co}}~\ctg{1}~(\ctg{natStream^{co}}~\ctg{6}) $ and see we get the expected value.
+  \begin{align*} 
+    &&   \ctg{n\text{-}th^{co}}~\ctg{1}~(\ctg{natStream^{co}}~\ctg{6}) &\red \ctg{n\text{-}th^{co}}~\ctg{0}~(\ctg{tl}_{\ctg{\N}}~(\ctg{natStream^{co}}~\ctg{6}))&&\text{by ($\ctg{n\text{-}th^{co}}$-red2)}&\\
+    && &\red \ctg{n\text{-}th^{co}}~\ctg{0}~(\ctg{natStream^{co}}~\ctg{7})&&\text{by ($\ctg{natStream^{co}}$-red2)}&\\
+    && &\red \ctg{hd}_{\ctg{\N}}~(\ctg{natStream^{co}}~\ctg{7})&&\text{by ($\ctg{n\text{-}th^{co}}$-red1)}&\\
+    && &\red \ctg{7}&&\text{by ($\ctg{natStream^{co}}$-red1)}&
+  \end{align*}
+  
+\subsubsection{Predicates on streams}
+\label{subsec:predicates}
+
+We have seen how we can declare corecursive functions in \Agda{} and then translate them into \Dedukti{}. However, as our main objective is doing proof interoperability, we also need to see how we can define coinductive predicates and reason about them by coinduction. However, remember that, by the \textit{Curry-Howard} correspondence, propositions are just types, thus proofs by coinduction are just corecursive functions, and therefore the ideas we have seen up until now apply in the same way. To illustrate this, we look at how we can represent the notion of equality between streams in \Agda{} and then translate them into \Dedukti{}.
+
+As seen in section x, corecursive functions must have coinductive types as codomain. Therefore, by the \textit{Curry-Howard} correspondence, proofs by coinduction must prove coinductive predicates. However, the notion of equality that is most common in type theory is not defined by a coinductive type, but by an inductive one, and thus in order to reason about equality on streams we have to define a coinductive notion of equality for them.
+
+In the language of musical coinduction, we can represent this notion using the following coinductive type.  In the definition, $ \equiv $ is \Agda{}'s type for regular equality. Furthermore, some arguments are between brackets to declare them as implicit.
+
+\begin{code}
+\>[2]\AgdaKeyword{data}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}$\sim$\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Stream}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Stream}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSpace{}%
+\AgdaKeyword{where}\<%
+\\
+\>[2][@{}l@{\AgdaIndent{0}}]%
+\>[4]\AgdaInductiveConstructor{$\sim$-empty}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{$\sim$}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\<%
+\\
+%
+\>[4]\AgdaInductiveConstructor{$\sim$-cons}%
+\>[12]\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{x}\AgdaSpace{}%
+\AgdaBound{x'}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{l}\AgdaSpace{}%
+\AgdaBound{l'}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaRecord{$\infty$}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{Stream}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSymbol{)\}}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{$\equiv$}}\AgdaSpace{}%
+\AgdaBound{x'}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaRecord{$\infty$}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{$\flat$}\AgdaSpace{}%
+\AgdaBound{l}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{$\sim$}}\AgdaSpace{}%
+\AgdaField{$\flat$}\AgdaSpace{}%
+\AgdaBound{l'}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{::}}\AgdaSpace{}%
+\AgdaBound{l}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{$\sim$}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{x'}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{::}}\AgdaSpace{}%
+\AgdaBound{l'}\AgdaSymbol{)}\<%
+\end{code}
+Intuitively,  two streams are similar (that is, coinductively equal) when they are both empty or when they have equal heads and, when resuming the computation on their tails with $ \flat $, we have a ``halted'' proof that they are similar.
+
+
+
+This coinductive type can be translated very straightforwardly into \Dedukti{}, giving the following declarations. On the declaration of $ \ctg{\sim\text{-}cons^{\eighthnote}} $ we mark some arguments between brackets to indicate that they will be implicit. Once more, this is not actually done in the translation, but rather a simplification for presentation.
+\dedukti{
+  &\ctg{\sim^{\eighthnote}} : \Pi A : \ctb{U}~(\ctb{Set}~\ctb{z}). \ctb{El}~(\ctg{Stream}~A) \to \ctb{El}~(\ctg{Stream}~A) \to \ctb{U}~(\ctb{Set}~\ctb{z})~~(\text{written infix as }\ctg{\sim}_A)& \text{($\ctg{Stream^{\eighthnote}}$-decl)}\\
+  &\ctg{\sim\text{-}empty^{\eighthnote}} : \Pi A : \ctb{U}~(\ctb{Set}~\ctb{z}). \ctg{[]}_A \ctg{\sim_A^{\eighthnote}} \ctg{[]}_A~& \text{($\ctg{\sim\text{-}empty^{\eighthnote}}$-decl)}\\
+  &\ctg{\sim\text{-}cons^{\eighthnote}} : \Pi (A : \ctb{U}~(\ctb{Set}~\ctb{z}))~\{x~y :\ctb{El}~A\}~\{l~l' : \ctb{El}~(\ctg{Stream^{\eighthnote}}~A)\}. \\
+  &~~~~~~~~~~~~~~~~~~~\ctb{El}~(x~\ctg{\equiv}~y) \to \ctb{El}~(\ctb{\infty}~((\ctb{\flat}_A~l)~\ctg{\sim_A^{\eighthnote}}~(\ctb{\flat}_A~l')))\to \ctb{El}~((x~\ctg{::}_A~l)~\ctg{\sim_A^{\eighthnote}}~(x'~\ctg{::}_A~l')) & \text{($\ctg{\sim\text{-}cons^{\eighthnote}}$-decl)}
+}
+Using this type, we can prove many interesting properties, for instance that $ \sim $ is an equivalence relation, satisfying reflexivity, symmetry and transitivity. We can also use it to prove properties about operations in streams. For instance, if we have a binary operation on the type $ A $ we can show that by extending it pointwise on streams we preserve some nice properties. To illustrate this, let's define an operation of sum between two streams of natural numbers. The following definition says that when one of the streams is empty, the result is also empty, but when both have a head and a tail we perform a normal sum on the heads and we make a corecursive call on the tails.
+\begin{code}
+\>[2]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}$\oplus$\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Stream}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Stream}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Stream}\AgdaSpace{}%
+\AgdaDatatype{Nat}\<%
+\\
+%
+\>[2]\AgdaInductiveConstructor{[]}%
+\>[10]\AgdaOperator{\AgdaFunction{$\oplus$}}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}%
+\>[22]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\<%
+\\
+%
+\>[2]\AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{::}}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{})}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\oplus$}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}%
+\>[22]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\<%
+\\
+%
+\>[2]\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{::}}\AgdaSpace{}%
+\AgdaBound{l}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\oplus$}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{x'}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{::}}\AgdaSpace{}%
+\AgdaBound{l'}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{+}}\AgdaSpace{}%
+\AgdaBound{x'}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{::}}\AgdaSpace{}%
+\AgdaOperator{\AgdaCoinductiveConstructor{$\sharp$}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{$\flat$}\AgdaSpace{}%
+\AgdaBound{l}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\oplus$}}\AgdaSpace{}%
+\AgdaField{$\flat$}\AgdaSpace{}%
+\AgdaBound{l'}\AgdaSymbol{)}\<%
+\end{code}
+We can express this function in \Dedukti{} by the following declarations. Note that the halted version of $ \oplus $ now also takes a halted argument. Therefore, the occurrence of $ \sharp~(\flat~l\oplus~\flat~l') $  is replaced by $ l~\ctg{\sharp\text{-}\oplus}~l' $ in ($ \ctg{\oplus^{\eighthnote}} $-red3). The $ \flat $ is only applied to $ l, l' $ when the calculation of $ \oplus $ is resumed by applying the $ \flat $ to it, using ($ \ctg{\sharp\text{-}\oplus^{\eighthnote}} $-red).
+\dedukti{
+  &\ctg{\oplus^{\eighthnote}}~: \ctb{El}~(\ctg{Stream~\N}) \to \ctb{El}~(\ctg{Stream~\N}) \to \ctb{El}~(\ctg{Stream~\N})~~(\text{written infix})& \text{($\ctg{\oplus^{\eighthnote}}$-decl)}\\
+  &\ctg{\sharp\text{-}\oplus^{\eighthnote}}~: \ctb{El}~(\ctb{\infty}~(\ctg{Stream~\N})) \to \ctb{El}~(\ctb{\infty}~(\ctg{Stream~\N})) \to \ctb{El}~(\ctb{\infty}~(\ctg{Stream~\N}))~~(\text{written infix})& \text{($\ctg{\sharp\text{-}\oplus^{\eighthnote}}$-decl)}\\
+  &\ctg{[]_{\N}}~\ctg{\oplus^{\eighthnote}}~\_\red \ctg{[]_{\N}}&\text{($\ctg{\oplus^{\eighthnote}}$-red1)}\\
+  &(\_~\ctg{::_{\N}}~\_)~\ctg{\oplus^{\eighthnote}}~\ctg{[]_\N}\red \ctg{[]_{\N}}&\text{($\ctg{\oplus^{\eighthnote}}$-red2)}\\
+  &(x~\ctg{::_{\N}}~l)~\ctg{\oplus^{\eighthnote}}~(x'~\ctg{::_{\N}}~l')\red (x~\ctg{+}~x') ~\ctg{::_{\N}}~ (l~\ctg{\sharp\text{-}\oplus^{\eighthnote}}~l')&\text{($\ctg{\oplus^{\eighthnote}}$-red3)}\\    
+  &\ctb{\flat}_{\ctg{\N}}~(l~\ctg{\sharp\text{-}\oplus^{\eighthnote}}~l') \red (\ctb{\flat}_{\ctg{\N}}~l)~\ctg{\oplus^{\eighthnote}}~(\ctb{\flat}_{\ctg{\N}}~l)'& \text{($\ctg{\sharp\text{-}\oplus^{\eighthnote}}$-red)}
+}
+Now, using a proof $ +\text{-}assoc $ that $ + $ is associative, we can show associativity of $ \oplus $. The cases in which one of the streams is empty are trivial, the interesting case is when we have $ l_i = x_i :: s_i $ for $ i=1,2,3 $. In this setting, note that we have the following reductions (in \Agda{}).
+\[
+((x_1 :: s_1) \oplus (x_2 :: s_2)) \oplus (x_3 :: s_3) \red ((x_1 + x_2) :: \sharp (\flat~s_1 \oplus \flat~s_2)) \oplus (x_3 :: s_3) \red ((x_1 + x_2) + x_3) :: \sharp ((\flat~s_1 \oplus \flat~s_2) \oplus \flat~s_3)
+\] \[
+(x_1 :: s_1) \oplus ((x_2 :: s_2) \oplus (x_3 :: s_3)) \red (x_1 :: s_1) \oplus ((x_2 + x_3) :: \sharp (\flat~s_2 \oplus \flat~s_3)) \red (x_1 + (x_2 + x_3)) :: \sharp (\flat~s_1 \oplus (\flat~s_2 \oplus \flat~s_3))
+\]
+Therefore, in order to show this case we only need to use $ \sim\text{-}cons $ and provide a proof of $ (x_1 + x_2) + x_3 \equiv x_1 + (x_2 + x_3) $, which we have by $ +\text{-}assoc $, and a proof of $ \flat ~( \sharp~(\flat~l1 \oplus (\flat~l2 \oplus \flat~l3))) \sim \flat~( \sharp~((\flat~l1 \oplus \flat~l2) \oplus \flat~l3)) $. But as we have $ \flat~(\sharp~x) = x $, then this amounts to show  $ \flat~l1 \oplus (\flat~l2 \oplus \flat~l3) \sim (\flat~l1 \oplus \flat~l2) \oplus \flat~l3 $, which we have by coinduction hypothesis. 
+\begin{code}
+\>[2]\AgdaFunction{$\oplus$-assoc}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{l1}\AgdaSpace{}%
+\AgdaBound{l2}\AgdaSpace{}%
+\AgdaBound{l3}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Stream}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{l1}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\oplus$}}\AgdaSpace{}%
+\AgdaBound{l2}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\oplus$}}\AgdaSpace{}%
+\AgdaBound{l3}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{$\sim$}}\AgdaSpace{}%
+\AgdaBound{l1}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\oplus$}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{l2}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\oplus$}}\AgdaSpace{}%
+\AgdaBound{l3}\AgdaSymbol{)}\<%
+\\
+%
+\>[2]\AgdaFunction{$\oplus$-assoc}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{$\sim$-empty}\<%
+\\
+%
+\>[2]\AgdaFunction{$\oplus$-assoc}\AgdaSpace{}%
+\AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{::}}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{})}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{$\sim$-empty}\<%
+\\
+%
+\>[2]\AgdaFunction{$\oplus$-assoc}\AgdaSpace{}%
+\AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{::}}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{})}\AgdaSpace{}%
+\AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{::}}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{})}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{$\sim$-empty}\<%
+\\
+%
+\>[2]\AgdaFunction{$\oplus$-assoc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{x1}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{::}}\AgdaSpace{}%
+\AgdaBound{s1}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{x2}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{::}}\AgdaSpace{}%
+\AgdaBound{s2}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{x3}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{::}}\AgdaSpace{}%
+\AgdaBound{s3}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{$\sim$-cons}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{+-assoc}\AgdaSpace{}%
+\AgdaBound{x1}\AgdaSpace{}%
+\AgdaBound{x2}\AgdaSpace{}%
+\AgdaBound{x3}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaOperator{\AgdaCoinductiveConstructor{$\sharp$}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{$\oplus$-assoc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{$\flat$}\AgdaSpace{}%
+\AgdaBound{s1}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{$\flat$}\AgdaSpace{}%
+\AgdaBound{s2}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{$\flat$}\AgdaSpace{}%
+\AgdaBound{s3}\AgdaSymbol{)))}\<%
+\end{code}
+An interesting point to mention is that if we were to erase all $ \flat, \sharp $ and $ \infty $ and swap $ Stream $ for $ List $ in the definitions of $ \sim, \oplus, \oplus\text{-}assoc $, then $ \oplus\text{-}assoc $ would still be a valid proof. However, because we are dealing with streams, which do not need to be well-founded, our proof is more general because it also holds for infinite streams.
+
+\newcommand{\dksim}{~\ctg{\sim_\N^{\eighthnote}}~}
+\newcommand{\dkoplus}{~\ctg{\oplus^{\eighthnote}}~}
+
+The proof of $ \oplus\text{-}assoc $ can be expressed in \Dedukti{} by the following declarations.
+\dedukti{
+  &\ctg{\oplus\text{-}assoc^{\eighthnote}}: \Pi l_1~l_2~l_3 : \ctb{El}~(\ctg{Stream~\N}). \ctb{El}~(((l_1 \dkoplus l_2) \dkoplus l3) \dksim (l_1 \dkoplus (l_2 \dkoplus l_3)))  & \text{($\ctg{\oplus\text{-}assoc^{\eighthnote}}$-decl)}\\
+  &\ctg{\sharp\text{-}\oplus\text{-}assoc^{\eighthnote}}: \Pi l_1~l_2~l_3 : \ctb{El}~(\ctg{Stream~\N}). \ctb{El}~(\ctb{\infty}~(((l_1 \dkoplus l_2) \dkoplus l3) \dksim (l_1 \dkoplus (l_2 \dkoplus l_3)))  & \text{($\ctg{\sharp\text{-}\oplus\text{-}assoc^{\eighthnote}}$-decl)}\\
+  &\ctg{\oplus\text{-}assoc^{\eighthnote}}~\ctg{[]_\N}~\_~\_ \red \ctg{\sim\text{-}empty^{\eighthnote}_\N}&\text{($\ctg{\oplus\text{-}assoc^{\eighthnote}}$-red1)}\\
+  &\ctg{\oplus\text{-}assoc^{\eighthnote}}~(\_~\ctg{::_\N}~\_)~\ctg{[]_\N}~\_ \red \ctg{\sim\text{-}empty^{\eighthnote}_\N}&\text{($\ctg{\oplus\text{-}assoc^{\eighthnote}}$-red2)}\\
+  &\ctg{\oplus\text{-}assoc^{\eighthnote}}~(\_~\ctg{::_\N}~\_)~(\_~\ctg{::_\N}~\_)~\ctg{[]_\N} \red \ctg{\sim\text{-}empty^{\eighthnote}_\N}&\text{($\ctg{\oplus\text{-}assoc^{\eighthnote}}$-red3)}\\
+  &\ctg{\oplus\text{-}assoc^{\eighthnote}}~(x_1~\ctg{::_\N}~s_1)~(x_2~\ctg{::_\N}~s_2)~(x_1~\ctg{::_\N}~s_3) \red \\ &~~~~~~~~~~\ctg{\sim\text{-}cons^{\eighthnote}_\N}~(\ctg{+\text{-}assoc}~x_1~x_2~x_3)~(\ctg{\sharp\text{-}\oplus\text{-}assoc^{\eighthnote}}~s_1~s_2~s_3)&\text{($\ctg{\oplus\text{-}assoc^{\eighthnote}}$-red4)}\\
+  &\ctb{\flat}_{\ctg{\N}}~(\ctg{\sharp\text{-}\oplus\text{-}assoc^{\eighthnote}}~l_1~l_2~l_3) \red \ctg{\oplus\text{-}assoc^{\eighthnote}}~(\ctb{\flat}_{\ctg{\N}}~l_1)~(\ctb{\flat}_{\ctg{\N}}~l_2)~(\ctb{\flat}_{\ctg{\N}}~l_3) &\text{($\ctg{\sharp\text{-}\oplus\text{-}assoc^{\eighthnote}}$-red)}
+}
+
+The same development and translation can also be done with copattern-matching coinduction. However, as the case of musical coinduction is the most complex one we decided to do it here and, for size constraints, we refer to appendix X where we detail this development with copattern-matching coinduction. 
+
+Up until now, the only example of coinductive type we saw was the type of streams. However, coinductive types allows us to represent many more mathematical structures. For size constraints once more, we also refer to appendix x for a discussion on how to represent formal languages and translate it to \Dedukti{}. However, we believe that the main ideas of the translation hare already been exposed, with these additional examples are left as optional to the reader.
+  
+
+
+\section{Practical Implementation}
+\label{sec:impl}
+
+In the previous section, we saw how coinduction can be used in \Agda{} and how such definitions can be translated in the $ \lambda \Pi $-calculus modulo rewriting. We now detail the practical details of how this translation is implemented in \AgdaDedukti{}. A large part of this internship was also dedicated to restarting the development of \AgdaDedukti{}, which was halted since September of 2020, when Guillaume Genestier had to stop its development to write his PhD thesis. Therefore, we also detail many other contributions that were made for improving it.
+
+\subsection{Translation of Coinduction}
+\label{subsec:coind}
+
+As already mentioned, the proposed encoding of coinduction in the $ \lambda \Pi $-calculus modulo rewriting is based on the representation of the internal syntax of \Agda. Therefore, the main challenge here was adapting \AgdaDedukti{} to correctly translate the internal representations into \Dedukti{}, something that was not done in Genestier's prototype. The main problem the original prototype had and which prevented the translation of coinduction lied on the translation of clauses defining corecursive functions.
+
+A clause defining a normal recursive function $ f $ is generally of the form $ f~\vec{x} = y $, and therefore \Agda{} internally represents a clause by a head symbol $ f $, by a list of applied patterns $ \vec{x} $ and a body $ y $. However, when we were discussing the encoding of coinduction we saw that corecursive clause definitions do not always satisfy this criterion.
+
+In the case of musical coinduction, each function declaration $ f $ is duplicated into a halted version $ \sharp $-$ f $. The clauses of $ f $ itself are of the form $ f~\vec{x}=y $, however the only clause defining $ \sharp $-$ f $ is \[
+  \flat~(\sharp\text{-}f~\vec{x}) = f~\vec{x}
+  \,.\]In order to represent such a clause in the form $ f~\vec{x} = y $, \Agda{} puts projections in \textit{postfix form}. This means the previous clause is represented internally as $ \sharp\text{-}f~\vec{x}~.\flat = f~\vec{x} $, where the dot in $ .\flat $ means that this application should be translated in prefix form.
+
+This happens even more frequently when translating copattern matching corecursive functions. Indeed, a corecursive function $ f $ defined by copattern matching will have its clauses in the form $ \pi~(f~\vec{x})~\vec{z} = y $, which is then represented in the form $ f~\vec{x}~.\pi~\vec{z} = y $. For example, the first clause defining the function $ natStream $ was represented internally as $ natStream~n~.hd = n $. As Genestier's prototype did not take this into account, such functions declarations were translated in an incorrect way. For instance, the first clause of $ natStream $ was being translated as $natStream~n~hd \red n$, whose left side is not even well typed, as $ natStream~n $ is of type $ Stream~Nat $ and $ hd $ is of type $ \{A : Set\} \to Stream~A \to A$.
+
+Therefore, in order to correctly translate these clauses we had to change the code implementing the translation of clauses in order to properly account for this representation. As the original code was not documented, this turned out to be not so trivial. Moreover, when representing a clause $ f~\vec{x} = y $ \Agda{} does not store internally all the typing information of the left-hand side, but only of the head symbol $ f $. This information needs to be reconstructed while translating patterns, which makes the process a bit tricky.
+
+Finally, we also had to adapt other parts of the translator which did not interact properly with coinduction. Explicitly, the translation of eta-expansion (see details on Ap b) was previously treating all records in an homogeneous way, meaning that even coinductive records were translated with eta-expansion in \Dedukti{}. However, we saw in section x that eta-expansion causes non-termination when added to coinductive records. This did not cause a problem before, as coinduction was not a feature supported by the translator, but as this is now the case we had to adapt the translation in order to only translate with eta-expansion the records which also have it in \Agda{}.
+
+This implementation allowed us to translate automatically multiple \Agda{} files containing coinductive definitions and corecursive functions into \Dedukti{}. %Some of these translated files can be found in INSERT-NEW-GIT-REPO-WITH-TRANSLATIONS.
+
+
+\subsection{Agda2Lambdapi}
+\label{subsec:lambdapi}
+
+We had previously discussed that, in order to use the $ \lambda \Pi $-calculus modulo rewriting in practice, researchers at Deducteam have developed two implementations \Dedukti{} and \Lambdapi{}. Whereas \Dedukti{} will probably be discontinued, \Lambdapi{} is under active development and extends it in multiple ways. \Lambdapi{} features most notably interactive proof development, with a proof mode and tactics, but also other features such as efficient rewriting, metavariables and implicit arguments. As the prototype translator \AgdaDedukti{} was only capable of translating into \Dedukti{}, and not \Lambdapi{}, the extension of the translator with an Agda2Lambdapi mode was a natural goal of the internship, which would allow the translation of files into both \Dedukti{} and \Lambdapi{}.
+
+Most of the development of this new mode consisted of adapting the syntax of the output. Moreover, \Lambdapi{} files must state explicitly in their beginning which other files they use, something which was not needed in \Dedukti{}, and therefore the translation of each file now needed to take this into account. However, the most challenging part of this development was dealing with AC symbols, which are used to implement the translation of universe polymorphism.
+
+\subsubsection{Dealing with AC symbols}
+
+Associative commutative (or just AC) symbols, are symbols which satisfy an associative commutative equational theory. For instance, if we declare $ + : Nat \to Nat \to Nat $ as being AC, then we automatically get the conversions $ x + (y + z) \equiv (x + y) + z $ and $ x + y \equiv y + x$. Note that, even though we could add the conversion $ x + (y + z) \equiv (x + y) + z $ by means of the rewriting rule $x + (y + z) \red (x + y) + z$, there is no way to add the conversion relation $ x + y \equiv y + x $ with a terminating rewrite system. Therefore, the ability of having AC symbols strictly enriches the capability of handling equational theories.
+
+AC symbols may also enjoy a richer type of matching, called AC matching. In the presence of AC matching, all terms of the form $ x + x $, $ x + (y_1 + x) $, $ x + (y_1 + (y_2 + x)) $, etc are matched by the rule $x + x \red x$, whereas with normal matching we would have to declare a rewrite rule \[
+x + (y_1 ... (y_k + x)...) \red x + (y_1 ... (y_{k-1} +y_k)...)
+\,.\] for each $ k $ (thus, an infinity of rewrite rules).
+
+We will not enter in all the details here, but the point is that the implementation of universe levels used both AC symbols and AC matching, which is particularly needed when using universe polymorphism. However, whereas \Dedukti{} featured both AC symbols and AC matching, \Lambdapi{} does not feature AC matching, as its implementation is complex and error-prone. Therefore, the challenge here was adapting the representation of universe levels such that AC matching was not required. In order to do so, Frédéric Blanqui introduced in \Lambdapi{} a mechanism to put terms in a canonical form internally, such that given an order on variable names, the canonical form uses the AC identities to order them. 
+
+The precise order of the variables is irrelevant, the interesting point is that the term $ x + (y_1 ... (y_k + x)...) $ will be represented either as $ x + (x + (...)) $ (case I) or $ y_{i_1} + ( ... (x + (x + ...))...) $ (case II) or $ y_{i_1} + (... (y_{i_k} + (x + x))...) $ (case III), and thus the occurrences of  $ x $ will be grouped together. This allows us to replace the rule $ x + x \red x $ using AC matching by the two rules \[
+x + x \red x
+\]matching (III) and \[
+x + (x + y) \red x + y
+\]matching (I) and (II).
+
+Using this technique, we modified with Frédéric Blanqui the encoding of universe levels in order to get rid of AC matching. This also evolved the testing of the canonical form mechanism and the reporting of multiple bugs to the development of \Lambdapi{}. This encoding allowed us then to correctly translate multiple \Agda{} files using universe polymorphism into \Lambdapi{}.
+
+
+\subsection{Adding support for latest Agda version}
+\label{subsec:label}
+
+The \AgdaDedukti{} translator is implemented as a backend of \Agda{}, and as such it makes heavy use of its code. As the development of the translator had been halted, it did not support the latest version of \Agda{}, and therefore in order to update the translator we had to adapt the parts of our code that used features from the previous version. Making those changes would not have been such a hard task if the translator used a previous version of the \Agda{} master branch.
+
+However, this was not the case, and it actually used an \textit{ad hoc} branch which incorporated many changes that were needed for the translation. As this branch had already too much diverted, incorporating the changes of the master branch  would have been impractical, and doing this for each new version was clearly not a good strategy. Therefore, in order to update the translator, we had to get rid of the dependency on the \textit{ad hoc} branch, in order to allow us to use the master branch.
+
+Fortunately, to do that we had the help of Jesper Cockx, an \Agda{} developer who also had helped on the development of the translator previously. He kindly incorporated in the master branch most of the changes needed, which allowed us to (almost) use it directly with the translator. The only change not yet incorporated is an active pull request which should be merged soon and which changes less then 10 lines. Therefore, nowadays the translator uses a version of \Agda{} almost identical to the master branch, as the only changes we need to add for the moment are these few lines. With all of these changes, we were able to update the translator, which now uses a slightly modified version (less then 10 lines) of a copy of the master branch dating less then 2 months.
+
+
+
+% \section{Future Work}
+% \label{sec:future}
+
+% \subsection{Universe polymorphism beyond prenex}
+% \label{subsec:label}
+
+% \subsection{Interoperability between predicative and impredicative type theory}
+% \label{subsec:predtoimpred}
+
+\section{Conclusion}
+\label{sec:conc}
+
+We have for the first time successfully proposed a representation of coinduction in \Dedukti{}, by encoding coinductive definitions from \Agda{}. Moreover, we  implemented this translation in \AgdaDedukti{}, which now allows for automatically translating coinduction proofs from \Agda{} to \Dedukti{}. This allowed us to automatically translate multiple proofs by coinduction, and opens a research direction for importing them into other proof assistants. Finally, we have proposed many improvements to \AgdaDedukti{}, which now support \Lambdapi{} and works almost directly with the latest versions of the \Agda{} master branch.
+
+This work opens many interesting directions for future work. A natural next problem is to see how we can import the translated coinduction proofs into other proof assistants, such as \textsc{Coq}. Furthermore, we also plan to treat other features still missing from the translator. For instance, sized types are annotations allowing to show termination, and are in particular used in the \Agda{} standard library for having a more general version of coinduction. Moreover, we already have a prototype of an encoding for universe polymorphism that extends the current one to the non-prenex case.
+
+Finally, the ultimate goal is to understand how \Agda{} proofs can be imported in other proof systems, and vice versa. This is a particularly interesting research direction, as \Agda{} is the first proof assistant encoded into \Dedukti{} which feature a predicative type system and which mixes completely propositions with types. Therefore, it is important to better understand the relation between predicative and impredicative type theory and to build encodings between them. This would allow us to share proofs between \Agda{} and other impredicative type systems, such as \textsc{Coq}, \textsc{Matita}, \textsc{Isabelle}, etc.
+
+
+
+
+
+
+\begin{appendices}
+  \section{References}
+\bibliographystyle{abbrv}  
+\bibliography{ref}
+
+\section{Typing rules for the $ \boldsymbol \lambda \boldsymbol \Pi $-calculus modulo rewriting}
+
+The following describes typing in the $ \lambda \Pi $-calculus modulo rewriting for a given set of rewrite rules $ \mathcal{R} $. Given a context $ \Gamma $, a signature $ \Sigma $ and $ M,A \in \Lambda_{\lambda \Pi} $, we define the typing judgment $ \Sigma; \Gamma \vdash M : A $ inductively by the following deduction rules\cite{thU}. The relation $ \equiv $ in the rule Conv is the least equivalence relation containing $ \equiv_\beta $ and the context and substitution closure of the rules in $ \mathcal{R} $. In the rules Decl, Prod, Convs, Abs and Conv, the letter $ s $ stands either for $ \Type $ or $ \Kind $.
+
+\begin{samepage}
+  \begin{center}
+    \textbf{Context forming rules}
+  \end{center}
+\begin{center}
+  \AxiomC{}
+\RightLabel{Empty}
+\UnaryInfC{$\Sigma; \emptyset~\text{well-formed}$}
+\DisplayProof
+\hskip 1.5em
+\AxiomC{$\Sigma;\Gamma \vdash A : s$}
+\AxiomC{$x \notin \Gamma$}
+\RightLabel{Decl}
+\BinaryInfC{$\Sigma;\Gamma, x : A~\text{well-formed} $}
+\DisplayProof
+\end{center}
+  \begin{center}
+    \textbf{Term forming rules}
+  \end{center}
+
+\begin{center}
+  \AxiomC{$ \Sigma;\Gamma~\text{well-formed} $}
+\RightLabel{Sort}
+\UnaryInfC{$\Sigma;\Gamma \vdash \Type : \Kind$}
+\DisplayProof
+\end{center}
+\begin{center} 
+  \AxiomC{$\Sigma; \Gamma \vdash A : \Type $}
+  \AxiomC{$\Sigma; \Gamma, x : A \vdash B : s $}  
+\RightLabel{Prod}
+\BinaryInfC{$\Sigma;\Gamma \vdash \Pi x : A . B : s  $}
+\DisplayProof
+\end{center}
+\begin{center}
+\AxiomC{$\Sigma;\Gamma~\text{well-formed}$}
+\AxiomC{$ x : A \in \Gamma $}
+\RightLabel{Var}
+\BinaryInfC{$\Sigma;\Gamma \vdash x : A  $}
+\DisplayProof
+\end{center}
+\begin{center}
+\AxiomC{$\Sigma;\Gamma~\text{well-formed}$}
+\AxiomC{$c : A \in \Sigma$}
+\AxiomC{$\Sigma; \emptyset \vdash A : s $}
+\RightLabel{Cons}
+\TrinaryInfC{$\Sigma;\Gamma \vdash c : A  $}
+\DisplayProof
+\end{center}
+\begin{center}
+  \AxiomC{$\Sigma;\Gamma \vdash \Pi x : A . B : s  $}
+  \AxiomC{$\Sigma; \Gamma, x : A \vdash M : B $}
+  \RightLabel{Abs}
+\BinaryInfC{$\Sigma;\Gamma \vdash \lambda x : A . M :\Pi x : A . B  $}
+\DisplayProof
+\end{center}
+\begin{center}
+  \AxiomC{$\Sigma;\Gamma \vdash M : \Pi x : A . B  $}
+  \AxiomC{$\Sigma; \Gamma \vdash N : A $}
+  \RightLabel{App}
+\BinaryInfC{$\Sigma;\Gamma \vdash M N : B(N/x) $}
+\DisplayProof
+\end{center}
+  \begin{center}
+    \textbf{Conversion rule}
+  \end{center}
+    
+\begin{center}
+  \AxiomC{$\Sigma;\Gamma \vdash M : A $}
+  \AxiomC{$\Sigma;\Gamma \vdash B : s $}  
+  \AxiomC{$A \equiv B$}
+  \RightLabel{Conv}
+\TrinaryInfC{$\Sigma;\Gamma \vdash M : B $}
+\DisplayProof
+\end{center}
+\begin{center}
+ \large \textbf{Typing rules for the $ \boldsymbol\lambda \boldsymbol\Pi $-calculus modulo rewriting}
+\end{center}
+\end{samepage}
+
+\section{Representing universe polymorphism and eta-conversion in Dedukti}
+\label{sec:up}
+
+Among the many characteristics of \Agda, universe polymorphism and eta-conversion are two very important features. In the following, we will look at how they are present in \Agda{} and then we will discuss the encoding in \Dedukti{} that was proposed by Genestier. As this part is not essential for understanding coinduction and its representation in \Dedukti{} we preferred to leave it out of the main text, however we hope this can be of help to the interested reader wanting to understand more the representation of \Agda{} in \Dedukti{}.
+
+\subsection{Universe polymorphism and eta-conversion in Agda}
+\label{subsec:label}
+
+\subsubsection{Universe polymorphism}
 
 As already said, \Agda{} extends Martin-L\"of Type Theory in a number of ways. One of these new features is the addition of \textit{universe polymorphism}, which allows for building terms which can live in multiples universes. In order to understand what this means, suppose we want to define an inductive type for lists, associating to each type $A $ in $ Set $ another type in $ Set $ of lists of $ A $.
 \begin{code}
@@ -627,7 +1725,7 @@ The omega hierarchy also fixes a missing symmetry, as before the sort $ Set\omeg
 \AgdaBound{i}\AgdaSymbol{)}\<%
 \end{code}
 
-\redbold{$ \boldsymbol \eta $-equivalence}
+\subsubsection{$ \boldsymbol \eta $-equivalence}
 
 Like some proof assistants (and unlike the $ \lambda \Pi $-calculus modulo rewriting), the \Agda{} conversion system features $ \eta $-equivalence, a kind of dual to $ \beta $-equivalence. Whereas $ \beta $-reduction explains how to reduce an eliminator (application) applied to a constructor (abstraction) \[
 (\lambda x : A. M) N \red_\beta M (N/x)
@@ -644,137 +1742,9 @@ pair \equiv (fst~pair, snd~pair)
 \,.\]We then say that the term $ (fst~pair, snd~pair) $ is in eta-long form and we do not expand it anymore.
 
 
+\subsection{Representing universe polymorphism and eta-conversion}
 
-\subsection{Agda2Dedukti: a practical translator into the $\boldsymbol  \lambda \boldsymbol \Pi $-calculus modulo rewriting}
-\label{sec:label}
-
-The problem of encoding the logic of \Agda{} in the $ \lambda \Pi $-calculus modulo rewriting was first treated by Guillaume Genestier\cite{guillaume}, who started the development of \AgdaDedukti{}, a prototype translator. In order to do so, he used techniques already known in the literature[x] to represent universes and inductive types, but he most notably proposed encodings of prenex universe polymorphism and eta conversion, two features whose representation in the $ \lambda \Pi $-calculus modulo rewriting was not known.  We present a quick review of how the encoding works.
-
-% Before starting, we first establish a convention on how we represent Dedukti encodings. First remember that declarations in Dedukti are either constants, which are added to the signature $ \Sigma $, or rewrite rules, which are added to $ \mathcal{R} $. Therefore, each declaration will be marked either by ($c $-decl), meaning that the constant $c$ is being added to the signature $ \Sigma $, or by ($ c $-red), meaning that a rewrite rule concerning the constant $ c $ is being added to $ \mathcal{R} $. We also enclose such declarations by two vertical black bars (as seen in the next page), to explicit that we are making a constant or rule declaration.
-
-Before starting, we adapt our convention on how to represent \Dedukti{} encodings and we introduce the color \ctg{green} to represent constants alongside \ctb{blue}. Now we declare in \ctb{blue} constants which encode the underling type theory of a system, so for instance as the hierarchy $ Set_0 : Set_1 : ... $ is primitive in the \Agda{} type system and cannot be removed, it will be represented by constants in blue. On the other hand, we use \ctg{green} to declare constants which correspond to definitions in an \Agda{} file and  which are not primitive in the system, but added by the user, such as the definition of natural numbers $ \ctg{\N} $ and the function plus $ \ctg{+} $. Variables and symbols which are primitive to the $ \lambda \Pi $-calculus modulo theory, such as  $x, A, M, \alpha, \lambda, \Pi, \to, \Type $ are still represented in black. We remind that, even thought the colors \ctb{blue} and \ctg{green} are also used in the \Agda, their meaning is completely different, and thus it is important to not mistake \Agda{} code with \Dedukti{} declarations. Finally, when declaring constants that play a role of function, we allow ourselves to write them in infix notation or to write some arguments as subscripts, when this simplifies the notation (see cases of $ \ctb{\sqcup} $ and $ \ctb{\leadsto} $ below).
-
-\redbold{Universes and type system}
-
-To represent the infinite hierarchy of universes $ Set_0 : Set_1 : Set_2 : ... $, we first declare a type of sorts and a function that associates to each sort the type of its terms. Therefore, each \Agda{} type $ A $ that lives in a sort or universe $ \alpha $ will be represented as a term in the type $ \ctb{U}~\alpha $.
-\dedukti{
-  &\ctb{Sort} : \Type& \text{($\ctb{Sort}$-decl)}\\
-  &\ctb{U} : \ctb{Sort} \to \Type& \text{($\ctb{U}$-decl)}
-}
-% \begin{center}\begin{tcolorbox}[blanker,left=3mm,right=3mm,
-%   borderline vertical={2pt}{0pt}{black}, text width=170mm]
-% \abovedisplayskip=0pt% <--- remove vertical space above align  
-%   \begin{flalign*}
-%   &\ctb{Sort} : \Type& \text{($\ctb{Sort}$-decl)}\\
-%   &\ctb{U} : \ctb{Sort} \to \Type& \text{($\ctb{U}$-decl)}
-%   \end{flalign*}
-% \end{tcolorbox}\end{center}
-% \begin{tcolorbox}[ams align*, blanker,left=3mm,right=3mm,
-%   borderline vertical={2pt}{0pt}{black}]
-%   &Sort : \Type& \text{oi}&\\
-%   &U : Sort \to \Type& \text{sssoiteste}&
-% \end{tcolorbox}
-% \begin{align*}
-%   &Sort : \Type\\
-%   &U : Sort \to \Type
-% \end{align*}
-Then we define a type $ L $ to represent universe levels (it would be more appropriated to call it $ \N $, but we reserve this name to the integers as represented in the theory). Finally, we can define the sorts $ Set_i $ by defining a function associating to each level a sort.
-\dedukti{
-  &\ctb{L} : \Type& \text{($\ctb{L}$-decl)}\\
-  &\ctb{z} : \ctb{L}& \text{($\ctb{z}$-decl)}\\
-  &\ctb{s} : \ctb{L} \to \ctb{L} &\text{($\ctb{s}$-decl)}\\
-  &\ctb{set} : \ctb{L} \to \ctb{Sort}  &  \text{($\ctb{set}$-decl)}
-}
-We can already represent some basic types, like is the case with integers with $ \ctg{\N} : \ctb{U}~(\ctb{Set}~\ctb{z}) $. However, to represent the elements that live in $ \ctg{\N} $ we need another function, taking a sort $ \alpha $ and a type $ A $ in $ \ctb{U}~\alpha $ and returning the type of elements of A.
-\dedukti{
-  &\ctb{El} : \Pi \alpha : \ctb{Sort}. U~\alpha \to \Type~~(\text{written as }\ctb{El}_\alpha)& \text{($\ctb{El}$-decl)}
-}
-
-Now we can declare $ \ctg{0} $ as an element of $ \ctb{El}_{\ctb{set}~\ctb{z}}~\ctg{\N} $. In Agda, we also have $ Set_i : Set_{i+1} $ for each $ i $, therefore we need to represent this on the encoding. To do so, we first define a function mapping each sort into its successor sort. Then we can declare a function mapping each sort $ \alpha $ on the corresponding object that lives in $ \ctb{\Box}~\alpha $. To properly identify the object $ \ctb{\Box}~\alpha $ with the sort $ \alpha $ we add a rewrite rule identifying their types.
-\dedukti{
-  &\ctb{\Box} :\ctb{Sort} \to \ctb{Sort} & \text{($\ctb{\Box}$-decl)}\\
-  &\ctb{\Box}~(\ctb{set}~i) \red \ctb{set}~(\ctb{s}~i)& \text{($\ctb{\Box}$-red)}\\
-  &\ctb{\diamond} : \Pi \alpha : \ctb{Sort}. \ctb{U}~(\ctb{\Box}~\alpha)& \text{($\ctb{\diamond}$-decl)}\\
-  &\ctb{El}~\_~(\ctb{\diamond}~\alpha) \red \ctb{U}~\alpha& \text{($\ctb{\diamond}$-red)}
-}
-The joker on the last rule represents a non used variable. As this is constraint by typing as being equal to $ \ctb{\Box}~\alpha $, we don't need to specify it. Finally it is only left to represent \Agda{} dependent products, such as $ (n : \N) \to n = n $. To do this, we first declare a constant calculating the max between two sorts. This function uses an auxiliary max function which operates on levels.
-\dedukti{
-  &\ctb{\sqcup} : \ctb{L} \to \ctb{L} \to \ctb{L}~~(\text{written infix})& \text{($\ctb{\sqcup}$-decl)}\\
-  &(\ctb{s}~x)~\ctb{\sqcup}~(\ctb{s}~y) \red \ctb{s}~(x~\ctb{\sqcup}~y)& \text{($\ctb{\sqcup}$-red)}\\
-  &\ctb{z}~\ctb{\sqcup}~x \red x& \text{($\ctb{\sqcup}$-red)}\\
-  &x~\ctb{\sqcup}~\ctb{z} \red x& \text{($\ctb{\sqcup}$-red)}\\
-  &\ctb{\lor} : \ctb{Sort} \to \ctb{Sort} \to \ctb{Sort}~~(\text{written infix}) & \text{($\ctb{\lor}$-decl)}\\
-  &(\ctb{set}~i)~\ctb{\lor}~(\ctb{set}~j) \red \ctb{set}~(i~\ctb{\sqcup}~j)& \text{($\ctb{\lor}$-red)}
-}
-Now we can define the constant representing products, which takes two sorts $ \alpha, \beta $, a type  $ A $ in $ \alpha $ and a function mapping each element of $ A $ to a type in $ \beta $.
-\dedukti{
-  &\ctb{\leadsto}~: \Pi (\alpha~\beta : \ctb{Sort}) (A : \ctb{U}~\alpha). (\ctb{El}_\alpha~A \to \ctb{U}~\beta) \to \ctb{U}~(\alpha~\ctb{\lor}~\beta)~~(\text{written infix as }{}_{\alpha}{\ctb{\leadsto}}_\beta)& \text{($\ctb{\leadsto}$-decl)}\\
-  &\ctb{El}_{\_}~(A~{}_{\alpha}{\ctb{\leadsto}}_\beta~B) \red \Pi x : \ctb{El}_\alpha~A. \ctb{El}_\beta~(B~x)& \text{($\ctb{\leadsto}$-red)}
-}
-For instance, if we want to represent $ refl : (n : \N) \to n=n $ we can declare the constant $ \ctg{refl} $ as living in \[
-\ctb{El}_{\ctb{set}~\ctb{z}}~(\ctg{\N}~{}_{(\ctb{set~z})}{\ctb{\leadsto}}_{(\ctb{set~z})}~(\lambda n : \ctb{El}_{\ctb{set~z}}~\ctg{\N}. n \ctg{=} n))
-  \,,\]as the latter reduces to $ \Pi n : \ctb{El}_{\ctb{set~z}}~\ctg{\N}. \ctb{El}_{\ctb{set~z}}~(n\ctg{=}n) $. In this case we could ask ourselves why not define the type of $ \ctg{refl} $ directly as being $\Pi n : \ctb{El}_{\ctb{set~z}}~\ctg{\N}. \ctb{El}_{\ctb{set~z}}~(n\ctg{=}n)$. However, for a type to be in the image of the translation, it must be convertible to a type of the form $ \ctb{El}_\alpha~A $, for some $ \alpha, A $. Therefore, by writing it in this more complicated way, we explicit the fact that $\ctb{refl}$ lives in the translation of an \Agda{} type, and not just in some arbitrary type in \Dedukti{}.
-
-Nevertheless, as this encoding makes the presentation of the work a lot heavier, we will make a choice to simplify the notation on the next parts. Explicitly, we will write a product type such as  $\ctb{El}_{\alpha\ctb{\lor}\beta}~(A~{}_{\alpha}{\ctb{\leadsto}}_\beta~B)  $ directly as its normal form, and we will write $ \ctb{El}~A $ to represent $ \ctb{El}_{\ctb{set}~\ctb{z}}~A $. Therefore, the type \[
-\ctb{El}_{\ctb{set}~\ctb{z}}~(\ctg{\N}~{}_{(\ctb{set~z})}{\ctb{\leadsto}}_{(\ctb{set~z})}~(\lambda n : \ctb{El}_{\ctb{set~z}}~\ctg{\N}. n \ctg{=} n))
-\]   of $ \ctg{refl} $ gets represented as \[
-\Pi n : \ctb{El}~\ctg{\N}. \ctb{El}~(n \ctg{=} n)
-  \,.\]However, this simplification is \underline{only for presentation purposes}, and is not used in practice in the real translation.
-
-\redbold{Inductive types and recursive functions}
-
-
-The representation of \Agda{}'s inductive types and recursive functions can be done in a very simple way. For each inductive definition, such as the one of natural numbers we declare a constant representing the type and one constant to represent each constructor.
-\dedukti{
-  &\ctg{\N} : \ctb{U}~(\ctb{set}~\ctb{z}) & \text{($\ctg{\N}$-decl)}\\
-  &\ctg{zero} : \ctb{El}~\ctg{\N}& \text{($\ctg{zero}$-decl)}\\
-  &\ctg{succ} : \ctb{El}~\ctg{\N} \to \ctb{El}~\ctg{\N} &\text{($\ctg{succ}$-decl)}
-}
-In order to translate a recursive function, such as the sum, we first declare a constant defining the function and we add a rewrite rule for each clause. Note that, as these rules are only fired when the left term corresponds to an instance of the constructor, when translating a terminating \Agda{} function, we obtain automatically a terminating set of rewrite rules.
-\dedukti{
-  & \ctg{+} : \ctb{El}~\ctg{\N} \to \ctb{El}~\ctg{\N} \to \ctb{El}~\ctg{\N} & \text{($\ctg{+}$-decl)}\\
-  & \ctg{zero} \ctg{+} y \red y& \text{($\ctg{+}$-red1)}\\
-  & (\ctg{succ}~x) \ctg{+} y \red \ctg{succ}~(x \ctg{+} y)& \text{($\ctg{+}$-red2)}
-}
-
-On the definition of the translated function $ + $, as there was no overlap between clauses, the translation was immediate. However, consider the following definition with overlapping clauses.
-
-\begin{code}
-\>[2]\AgdaFunction{test1}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Nat}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Bool}\<%
-\\
-%
-\>[2]\AgdaFunction{test1}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{succ}\AgdaSpace{}%
-\AgdaInductiveConstructor{zero}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{true}\<%
-\\
-%
-\>[2]\AgdaCatchallClause{\AgdaFunction{test1}}\AgdaSpace{}%
-\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}%
-\>[20]\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{false}\<%
-\end{code}
-If we were to translate this definition naively we would have the following rewrite rules.
-\begin{align*}
-  &\ctg{test1}~(\ctg{succ}~\ctg{zero}) \red \ctg{true}\\
-  &\ctg{test1}~\_ \red \ctg{false}
-\end{align*}
-However, because rewrite rules have no priority order, in this system we would have both $ \ctg{test1}~(\ctg{succ}~\ctg{zero}) \red \ctg{true} $ and $ \ctg{test1}~(\ctg{succ}~\ctg{zero}) \red \ctg{false} $. In order to solve this problem we must make sure that the reduction respects the semantics of \Agda, meaning that we can only move to the next clause when we are sure that there is no possible match with the current one.
-
-Fortunately, \Agda{}'s internal coverage check, which is used to check totality of clauses, also compiles them into a non-overlapping set of clauses. For instance, by translating the clauses produced by the coverage check, we obtain the following rewrite rules for the function $ test1 $. This allows the translation of functions to correctly reflect the semantics of their definitions in \Agda.
-\begin{align*}
-  &\ctg{test1}~\ctg{zero} \red \ctg{false}\\  
-  &\ctg{test1}~(\ctg{succ}~\ctg{zero}) \red \ctg{true}\\
-  &\ctg{test1}~(\ctg{succ}~(\ctg{succ}~\_)) \red \ctg{false}
-\end{align*}
-
-
-\redbold{Universe polymorphism}
+\subsubsection{Universe polymorphism}
 
 Consider once again the universe polymorphic type of lists.
 \begin{code}
@@ -837,7 +1807,7 @@ An additional aspect of universe polymorphism which is much harder to represent 
 % \ctg{max\N} : \ctb{\forall}~(\lambda i : \ctb{L}. \ctb{set\omega})~(\lambda i : \ctb{L}. \ctb{\forall}~(\lambda j : \ctb{L}. \ctb{set}~(\ctb{s}~(i~\ctb{\sqcup}~j)))~(\lambda j : \ctb{L}. \ctb{set}~(i~\ctb{\sqcup}~j)))
 %   \,.\]
 
-\redbold{Eta-conversion}
+\subsubsection{Eta-conversion}
 
 As we have already seen, computation in \Agda{} features eta-expansion, a rewrite rule which, different from most, is type-directed. This characteristic makes eta-expansion impossible to be directly expressed with our notion of rewrite rule. Indeed, in the $ \lambda \Pi $-calculus modulo rewriting, a rewrite rule is a pair $ l \red r $ in which $ l $ is of the form $ c l_1...l_k $. We call this kind of rewriting untyped because matching is done purely syntactically, and we cannot inspect the types of the terms in order to know if a rewrite rule is applicable. In contrast, $ \eta $-expansion is defined by \[
 f \red  \lambda x : A. f~x \text{~~~~~if }f : \Pi x : A. B
@@ -851,205 +1821,199 @@ Using this symbol, we can properly match on a term's type in order to define eta
 \dedukti{
 &\ctb{\eta}^{A~{}_{\alpha}{\ctb{\leadsto}}_\beta~B}_{\_}~f\red \lambda x : \ctb{El}_\alpha~A. \ctb{\eta}_\beta^{B~x}~(f~x)& \text{($\ctb{\eta\leadsto}$-red)}
 }
-Moreover, note that after the reduction, the application $ f~x $ gets annotated by the $ \eta $ symbol, and the outer abstraction is no more annotated. Therefore, we cannot apply the rule directly to $ f$, and unless if $ f~x $ has also a product type, the rewrite rule cannot be reapplied, and thus we do not run into non-termination. We can also add rules to express the eta-expansion of records. For instance, the following rule adds eta-expansion to our translation of the record type of dependent pairs.
+Moreover, note that after the reduction, the application $ f~x $ gets annotated by the $ \eta $ symbol, and the outer abstraction is no more annotated. Therefore, we cannot apply the rule directly to $ f$, and unless if $ f~x $ has also a product type, the rewrite rule cannot be reapplied, and thus we do not run into non-termination.
+
+We can also add rules to express the eta-expansion of records. For instance, consider the record type of dependent pairs, which admits the following translation into \Dedukti{}.
 \dedukti{
-&\ctb{\eta}_{\_}^{\ctg{\Sigma}~A~B}~M \red \ctg{pair}~(\ctb{\eta}_{\ctb{set}~\ctb{z}}^A~(\ctg{fst}~A~B~M))~(\ctb{\eta}_{\ctb{set}~\ctb{z}}^{B~(\ctg{fst}~A~B~M)}~(\ctg{snd}~A~B~M))& \text{($\ctb{\eta\Sigma}$-red)}
+  &\ctg{\Sigma} : \Pi (A : \ctb{U}~(\ctb{set~z}))~(B : \ctb{El}~A \to \ctb{U}~(\ctb{set~z})). \ctb{U}~(\ctb{set~z})& \text{($ \ctg{\Sigma} $-decl)}\\
+  &\ctg{pair} : \Pi (A : \ctb{U}~(\ctb{set~z}))~(B : \ctb{El}~A \to \ctb{U}~(\ctb{set~z}))~(a : \ctb{El}~A). \\ &~~~~~~~~~~~\ctb{El}~(B~a) \to \ctb{El}~(\ctg{\Sigma}~A~B)~~(\text{written as }\ctg{pair}_{A,B}) &\text{($ \ctg{pair} $-decl)}\\
+  &\ctg{fst} : \Pi (A : \ctb{U}~(\ctb{set~z}))~(B : \ctb{El}~A \to \ctb{U}~(\ctb{set~z})). \ctb{El}~(\ctg{\Sigma}~A~B) \to \ctb{El}~A~~(\text{written as }\ctg{fst}_{A,B}) &\text{($ \ctg{fst} $-decl)}\\
+  &\ctg{snd} : \Pi (A : \ctb{U}~(\ctb{set~z}))~(B : \ctb{El}~A \to \ctb{U}~(\ctb{set~z}))~(x : \ctb{El}~(\ctg{\Sigma}~A~B)) . \\ &~~~~~~~~~~~\ctb{El}~(B~(\ctg{fst}_{A,B}~x))~~(\text{written as }\ctg{snd}_{A,B}) &\text{($ \ctg{snd} $-decl)}\\  
+  &\ctg{fst}_{\_,\_}~(\ctg{pair}_{\_,\_}~a~b) \red a &\text{($ \ctg{fst} $-red)}\\  
+  &\ctg{snd}_{\_,\_}~(\ctg{pair}_{\_,\_}~a~b) \red b &  \text{($ \ctg{snd} $-red)}
+}
+
+We can add eta-expansion to this record by declaring the following rule.
+\dedukti{
+&\ctb{\eta}_{\_}^{\ctg{\Sigma}~A~B}~M \red \ctg{pair}_{A,B}~(\ctb{\eta}_{\ctb{set}~\ctb{z}}^A~(\ctg{fst}_{A,B}~M))~(\ctb{\eta}_{\ctb{set}~\ctb{z}}^{B~(\ctg{fst}_{A,B}~M)}~(\ctg{snd}_{A,B}~M))& \text{($\ctb{\eta\Sigma}$-red)}
 }
 
 This presentation gives the general intuition behind this representation. Nevertheless, in order to define precisely how the translation of $ \eta $-expansion fully works, we would have to deal with many nuances and technical details, which we thus prefer to omit here. We refer to \cite{guillaume} for more details.
 
-\section{Representing Coinduction in the $ \boldsymbol \lambda \boldsymbol \Pi $-calculus modulo rewriting}
-\label{sec:encode}
 
+\section{More examples in translating coinduction}
+\label{sec:ex}
 
-As seen on the subsection about coinduction, the interesting point of this technique is being able to reason about objects which are possibly infinite. Obviously, this raises a problem when trying to implement coinduction in proof assistants, as terms must always be finite. This question is normally addressed by resorting to lazy representations of elements of coinductive types. This means that the infinite terms are never represented in their entirety, but can be developed an arbitrary amount of times, when required by the user.
+In section x we began to see some examples of how we can use coinduction in \Agda{} and translate it into \Dedukti{}. We continue here with some additional examples.
 
-% For instance, in the case of \textsc{Coq}, one can define the function $ natStream $ by the clause \[
-%   natStream~n = n :: (natStream~(n + 1))
-%   \,,\] but the term $ natStream~n $ will never reduce by itself to $ n :: (natStream~(n+1)) $, as this would be non-terminating. Rather, \textsc{Coq} imposes the condition that $ natStream~n $ will reduce only when being discriminated by a match.
+\subsection{Predicates on streams}
+\label{subsec:predi}
 
-In the $ \lambda \Pi $-calculus modulo rewriting, it is clear that trying to define the function $ natStream $ naively by \[
-  natStream~n \red n :: (natStream~(succ~n))
-\]would not work, as rewriting rules can be fired without any checks if the computation is really necessary. Therefore, we need to find a smarter way to control rewriting in this setting. In this section we will explore how this is handled in the case of \Agda{} and we will see how such ideas can be reused in our setting, allowing to represent coinduction and to translate \Agda{} proofs.
-
-
-
-\subsection{Coinduction in Agda}
-\label{subsec:coind-agda}
-
-
-
-Coinduction in \Agda{} features two presentations: musical coinduction, which is the old way of using coinduction in \Agda, and copattern matching coinduction, which is nowadays considered the standard. Both presentations try to solve the non-termination problem presented when introducing coinduction.
-
-\redbold{Musical Coinduction}
-
-Musical coinduction addresses this problem by introducing the following control operators, which control explicitly the evaluation of the corecursive calls. The constant $ \infty $ associates to each type $ A $ the type $ \infty~A $ of halted computations, whereas the operators $ \sharp $ and $ \flat $, also known as thunk and force, allow respectively to halt a computation and to resume it.
-   \begin{code}
-\>[2][@{}l@{\AgdaIndent{0}}]%
-\>[4]\AgdaPostulate{$ \infty $}%
-\>[7]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{A}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\\
-%
-\>[4]\AgdaPostulate{$ \sharp $}
-\>[7]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{A}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaBound{A}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaPostulate{$ \infty $}\AgdaSpace{}%
-\AgdaBound{A}\<%
-\\
-%
-\>[4]\AgdaPostulate{$ \flat $}
-\>[7]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{A}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaPostulate{$ \infty $}\AgdaSpace{}%
-\AgdaBound{A}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaBound{A}\<%
-\end{code}
-To define the coinductive type of streams using musical coinduction we use the following declaration. 
-
-\begin{code}
-\>[2]\AgdaKeyword{data}\AgdaSpace{}%
-\AgdaDatatype{Stream}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{A}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\AgdaSpace{}%
-\AgdaKeyword{where}\<%
-\\
-\>[2][@{}l@{\AgdaIndent{0}}]%
-\>[4]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}::\AgdaUnderscore{}}}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaBound{A}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{xs}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaRecord{$ \infty $}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaDatatype{Stream}\AgdaSpace{}%
-\AgdaBound{A}\AgdaSymbol{))}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Stream}\AgdaSpace{}%
-\AgdaBound{A}\<%
-\\
-\>[2][@{}l@{\AgdaIndent{0}}]%
-\>[4]\AgdaOperator{\AgdaInductiveConstructor{$ [] $}}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Stream}\AgdaSpace{}%
-\AgdaBound{A}\<%
-\end{code}
-The main particularity here is that the corecursive argument of the constructor $ \_::\_ $ now takes a halted computation of type $ Stream~A $. Therefore, to define the curecursive function $ natStream $ we need to use the $ \sharp $ operator to halt the computation of $ natStream~(n+1) $. As terms do not reduce under the $ \sharp $, this definition is terminating.
-
-\begin{code}
-\>[2]\AgdaFunction{natStream}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Nat}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Stream}\AgdaSpace{}%
-\AgdaDatatype{Nat}\<%
-\\
-%
-\>[2]\AgdaFunction{natStream}\AgdaSpace{}%
-\AgdaBound{n}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaBound{n}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{::}}\AgdaSpace{}%
-\AgdaOperator{\AgdaCoinductiveConstructor{$ \sharp $}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{natStream}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{succ}\AgdaSpace{}%
-\AgdaBound{n}\AgdaSymbol{))}\AgdaSpace{}%
-\end{code}
-
-A halted calculation can be resumed by the symbol $ \flat $, as expressed by the identity $ \flat~(\sharp~x) = x $. Using this symbol, we can define for instance a function, which given a position $ n $ takes the $ n $-th element of the  stream, if it exists. In order to do this, we first need to introduce the type constructor $ Maybe $, used when defining partial functions. Its constructors tell us that a value of type $ Maybe~A $ is either a value of $ A $ or nothing.
-\begin{code}
-\>[2]\AgdaKeyword{data}\AgdaSpace{}%
-\AgdaDatatype{Maybe}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{A}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\AgdaSpace{}%
-\AgdaKeyword{where}\<%
-\\
-\>[2][@{}l@{\AgdaIndent{0}}]%
-\>[4]\AgdaInductiveConstructor{just}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaBound{A}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Maybe}\AgdaSpace{}%
-\AgdaBound{A}\<%
-\\
-%
-\>[4]\AgdaInductiveConstructor{nothing}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Maybe}\AgdaSpace{}%
-\AgdaBound{A}\<%
-\end{code}
-We can now proceed to the definition of the function $ n $-th. At each step, if the position we are looking for is zero we simply return the head, otherwise we resume the computation of the tail (using the $ \flat $ operator) and we do a recursive call on it. If at any point we reach the end of the stream (as streams here are only possibly infinite, and not always), we return nothing to signal that the searched element does not exist. We note that, in opposition to $ natStream $, which is defined by corecursion, $ nth $ is defined by recursion on its first argument.
-
-\begin{code}
-\>[2]\AgdaFunction{nth}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Nat}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Stream}\AgdaSpace{}%
-\AgdaDatatype{Nat}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Maybe}\AgdaSpace{}%
-\AgdaDatatype{Nat}\<%
-\\
-%
-\>[2]\AgdaFunction{nth}\AgdaSpace{}%
-\AgdaInductiveConstructor{zero}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{hd}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{$ :: $}}\AgdaSpace{}%
-\AgdaBound{tl}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{just}\AgdaSpace{}%
-\AgdaBound{hd}\<%
-\\
-%
-\>[2]\AgdaFunction{nth}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{succ}\AgdaSpace{}%
-\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{hd}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{$ :: $}}\AgdaSpace{}%
-\AgdaBound{tl}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaFunction{nth}\AgdaSpace{}%
-\AgdaBound{n}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaField{$ \flat $}\AgdaSpace{}%
-\AgdaBound{tl}\AgdaSymbol{)}\<%
-\\
-%
-\>[2]\AgdaCatchallClause{\AgdaFunction{nth}}\AgdaSpace{}%
-\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}\AgdaSpace{}%
-\AgdaCatchallClause{\AgdaInductiveConstructor{[]}}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{nothing}\<%
-\end{code}
-
-\redbold{Copattern matching coinduction}
-
-Even though musical coinduction solves the problem of non-termination, it is clear that it is not very intuitive to use, as the user needs to control explicitly how calculations are halted and resumed, which requires some experience. Abel \textit{et al} introduced in \cite{copattern} a different presentation of coinduction through copattern matching. The main idea here is to restrict ourselves to one constructor coinductive types expressed as records and then define each element not through constructors but rather through their eliminators, or projections.
-
-For instance, if we consider the coinductive type of streams defined only by the constructor $ \_::\_ : A \to Stream~A \to Stream~A$ (therefore only containing infinite streams), we can express it by the following definition. Note that coinductive records must be marked with a the coinductive flag, as shown.
+We have already seen how we can prove properties on streams using the language of musical coinduction. The same can be done with copattern matching coinduction. In this presentation of coinduction, we define the equality between two streams by the following type. Note that, as the streams defined on the language of copattern matching coinduction are always infinite, then we do not have to consider the case in which the streams are both empty. Therefore, in this setting two streams are similar iff their heads are equal and their tails are similar.
 
 \begin{code}
 \>[2]\AgdaKeyword{record}\AgdaSpace{}%
+\AgdaOperator{\AgdaRecord{\AgdaUnderscore{}$\sim$\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{A}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{xs}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaRecord{Stream}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{ys}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaRecord{Stream}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSpace{}%
+\AgdaKeyword{where}\<%
+\\
+\>[2][@{}l@{\AgdaIndent{0}}]%
+\>[4]\AgdaKeyword{coinductive}\<%
+\\
+%
+\>[4]\AgdaKeyword{field}\<%
+\\
+\>[4][@{}l@{\AgdaIndent{0}}]%
+\>[6]\AgdaField{hd-$\equiv$}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaField{hd}\AgdaSpace{}%
+\AgdaBound{xs}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{$\equiv$}}\AgdaSpace{}%
+\AgdaField{hd}\AgdaSpace{}%
+\AgdaBound{ys}\<%
+\\
+%
+\>[6]\AgdaField{tl-$\sim$}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaField{tl}\AgdaSpace{}%
+\AgdaBound{xs}\AgdaSpace{}%
+\AgdaOperator{\AgdaRecord{$\sim$}}\AgdaSpace{}%
+\AgdaField{tl}\AgdaSpace{}%
+\AgdaBound{ys}\<%
+\end{code}
+We represent this definition by the following declarations in \Dedukti{}.
+\dedukti{
+  &\ctg{\sim^{co}} : \Pi (A : \ctb{U}~(\ctb{set~z})). \ctb{El}~(\ctg{Stream^{co}}~A) \to \ctb{El}~(\ctg{Stream^{co}}~A) \to \ctb{U}~(\ctb{set~z})~~(\text{written infix as }\ctg{\sim}^{\ctg{co}}_A) & \text{($\ctg{\sim^{co}}$-decl)}    \\
+  &\ctg{hd\text{-}\equiv} : \Pi (A : \ctb{U}~(\ctb{set~z}))~(x~y : \ctb{El}~(\ctg{Stream^{co}}~A)). \\ &~~~~~~~~~~~~~~\ctb{El}~(x~\ctg{\sim}^{\ctg{co}}_A~y) \to \ctb{El}~((\ctg{hd}_A~x)~\ctg{\equiv}~(\ctg{hd}_A~y))~~(\text{written as }\ctg{hd\text{-}\equiv}_A) & \text{($\ctg{hd\text{-}\equiv}$-decl)}    \\
+  &\ctg{tl\text{-}\sim} : \Pi (A : \ctb{U}~(\ctb{set~z}))~(x~y : \ctb{El}~(\ctg{Stream^{co}}~A)). \\ &~~~~~~~~~~~~~~ \ctb{El}~(x~\ctg{\sim}^{\ctg{co}}_A~y) \to \ctb{El}~((\ctg{tl}_A~x)~\ctg{\sim}^{\ctg{co}}_A~(\ctg{tl}_A~y))~~(\text{written as }\ctg{tl\text{-}\sim}_A) & \text{($\ctg{tl\text{-}\sim}$-decl)}  
+}  
+
+Once more, we can extend the operation of sum between natural numbers to streams and show that this extension preserves associativity. 
+
+\begin{code}
+\>[2]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}$\oplus$\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaRecord{Stream}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaRecord{Stream}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaRecord{Stream}\AgdaSpace{}%
+\AgdaDatatype{Nat}\<%
+\\
+%
+\>[2]\AgdaField{hd}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\oplus$}}\AgdaSpace{}%
+\AgdaBound{y}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{hd}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{+}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{hd}\AgdaSpace{}%
+\AgdaBound{y}\AgdaSymbol{)}\<%
+\\
+%
+\>[2]\AgdaField{tl}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\oplus$}}\AgdaSpace{}%
+\AgdaBound{y}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{tl}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\oplus$}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{tl}\AgdaSpace{}%
+\AgdaBound{y}\AgdaSymbol{)}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+%
+\>[2]\AgdaFunction{$\oplus$-assoc}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{s1}\AgdaSpace{}%
+\AgdaBound{s2}\AgdaSpace{}%
+\AgdaBound{s3}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaRecord{Stream}\AgdaSpace{}%
+\AgdaDatatype{Nat}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{s1}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\oplus$}}\AgdaSpace{}%
+\AgdaBound{s2}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\oplus$}}\AgdaSpace{}%
+\AgdaBound{s3}\AgdaSpace{}%
+\AgdaOperator{\AgdaRecord{$\sim$}}\AgdaSpace{}%
+\AgdaBound{s1}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\oplus$}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{s2}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\oplus$}}\AgdaSpace{}%
+\AgdaBound{s3}\AgdaSymbol{)}\<%
+\\
+%
+\>[2]\AgdaField{hd-$\equiv$}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{$\oplus$-assoc}\AgdaSpace{}%
+\AgdaBound{s1}\AgdaSpace{}%
+\AgdaBound{s2}\AgdaSpace{}%
+\AgdaBound{s3}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{+-assoc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{hd}\AgdaSpace{}%
+\AgdaBound{s1}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{hd}\AgdaSpace{}%
+\AgdaBound{s2}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{hd}\AgdaSpace{}%
+\AgdaBound{s3}\AgdaSymbol{)}\<%
+\\
+%
+\>[2]\AgdaField{tl-$\sim$}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{$\oplus$-assoc}\AgdaSpace{}%
+\AgdaBound{s1}\AgdaSpace{}%
+\AgdaBound{s2}\AgdaSpace{}%
+\AgdaBound{s3}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{$\oplus$-assoc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{tl}\AgdaSpace{}%
+\AgdaBound{s1}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{tl}\AgdaSpace{}%
+\AgdaBound{s2}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{tl}\AgdaSpace{}%
+\AgdaBound{s3}\AgdaSymbol{)}\<%
+\end{code}
+Note that the definition of $ \oplus $ and the proof that it associative is much simpler in the case of copattern matchin coinduction then in the case of musical coinduction. We can justify that by two reasons.
+
+First, as the streams here are always finite, we do not have to consider the special cases when one of the streams is empty. Even thought considering them is straightforward, it makes the code a lot longer. However, the main reason for copattern matching coinduction being simpler to use is that we do not need to deal with control operators, as everything is automatically terminating.
+
+We can very straightforwardly translate the definition of $ \oplus $ and the associativity proof in \Dedukti{} by the following declarations.
+\dedukti{
+  &\ctg{\oplus^{co}} : \ctb{El}~(\ctg{Stream^{co}}~\ctg{\N}) \to \ctb{El}~(\ctg{Stream^{co}}~\ctg{\N}) \to \ctb{El}~(\ctg{Stream^{co}}~\ctg{\N}) ~~(\text{written infix as }\ctg{\oplus}^{\ctg{co}}) & \text{($\ctg{\oplus^{co}}$-decl)}    \\
+  &\ctg{hd_{\N}}~(x~\ctg{\oplus^{co}}~y) \red (\ctg{hd_\N}~x)~\ctg{+}~(\ctg{hd_\N}~y)  & \text{($\ctg{\oplus^{co}}$-red1)}    \\
+  &\ctg{tl_{\N}}~(x~\ctg{\oplus^{co}}~y) \red (\ctg{tl_\N}~x)~\ctg{\oplus^{co}}~(\ctg{tl_\N}~y)  & \text{($\ctg{\oplus^{co}}$-red2)}\\
+  &\ctg{\oplus\text{-}assoc^{co}} : \Pi l_1~l_2~l_3 : \ctb{El}~(\ctg{Stream^{co}}~\ctg{\N}). \ctb{El}~(((l_1~\ctg{\oplus^{co}}~l_2)~ \ctg{\oplus^{co}}~l3)~\ctg{\sim^{co}_\N}~(l_1~\ctg{\oplus^{co}}~(l_2~\ctg{\oplus^{co}}~l_3)))  & \text{($\ctg{\oplus\text{-}assoc^{co}}$-decl)}\\
+  &\ctg{hd\text{-}\equiv_\N}~(\ctg{\oplus\text{-}assoc^{co}}~l_1~l_2~l_3) \red \ctg{+\text{-}assoc}~(\ctg{hd_\N}~l_1)~(\ctg{hd_\N}~l_2)~(\ctg{hd_\N}~l_3)& \text{($\ctg{\oplus\text{-}assoc^{co}}$-red1)}\\
+  &\ctg{tl\text{-}\sim_\N}~(\ctg{\oplus\text{-}assoc^{co}}~l_1~l_2~l_3) \red \ctg{\oplus\text{-}assoc}~(\ctg{tl_\N}~l_1)~(\ctg{tl_\N}~l_2)~(\ctg{tl_\N}~l_3)& \text{($\ctg{\oplus\text{-}assoc^{co}}$-red2)}  
+}  
+
+\subsection{Formal languages}
+\label{subsec:lang}
+
+Up until now we have only seen the example of streams, however coinduction is a very powerful principle that allows us to deal with many kinds of mathematical objects. One of these objects are formal languages, which can be represented in a very elegant way using coinduction. Following x, we present in this part the basic ideas of how this can be done in \Agda{}, and then show how this can be translated into \Dedukti{}. We limit our discussion only to the case of copattern matching coinduction, in order to prevent extending ourselves too much over this subject.
+
+Given an alphabet $ A $, a language over $ A $ is simply a subset $ L \subseteq A^* $, where $ A^* $ is the free monoid generated by $ A$, that is, the set of finite lists with elements in $ A $. A language $ L $ can be also described by the following data: a Boolean $ \nu : Bool $ stating whether $ \varepsilon $ is in $ L $ and a function $ \delta : A \to \mathcal{P}(A^*) $ mapping each letter $ a $ to the language $ a^{-1}L $ defined by $a x \in L \iff x \in a^{-1}L$. This decomposition can then be used to represent formal languages very elegantly as coinductive types.
+
+\begin{code}
+\>[2]\AgdaKeyword{record}\AgdaSpace{}%
+\AgdaRecord{Lang}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{A}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaPrimitiveType{Set}\AgdaSymbol{)}\AgdaSpace{}%
@@ -1064,486 +2028,253 @@ For instance, if we consider the coinductive type of streams defined only by the
 \>[4]\AgdaKeyword{field}\<%
 \\
 \>[4][@{}l@{\AgdaIndent{0}}]%
-\>[6]\AgdaField{hd}\AgdaSpace{}%
+\>[6]\AgdaField{$\nu$}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Bool}\<%
+\\
+%
+\>[6]\AgdaField{$\delta$}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaRecord{Lang}\AgdaSpace{}%
+\AgdaBound{A}\<%
+\end{code}
+\dedukti{
+  &\ctg{Lang} : \ctb{U}~(\ctb{set~z}) \to \ctb{U}~(\ctb{set~z}) & \text{($ \ctg{Lang} $-decl)}\\
+  &\ctg{\nu} : \Pi A :  \ctb{U}~(\ctb{set~z}). \ctb{El}~(\ctg{Lang}~A) \to \ctb{El}~\ctg{Bool}~~(\text{written as }\ctg{\nu}_A) &\text{($ \ctg{\nu} $-decl)}\\
+  &\ctg{\delta} : \Pi A :  \ctb{U}~(\ctb{set~z}). \ctb{El}~(\ctg{Lang}~A) \to \ctb{El}~\ctg{A} \to \ctb{El}~(\ctg{Lang}~A)~~(\text{written as }\ctg{\delta}_A) &  \text{($ \ctg{\delta} $-decl)}
+  }
+Using this representation, we can define many of the objects and operations that we normally use with formal languages. For instance, we can define the empty language by corecursion by stating that $ \nu~(\emptyset~A) $ is false ($ \varepsilon \notin \emptyset $) and that, for all $ a : A $, $ \delta~(\emptyset~A)~a $ is defined by making a corecursive call to $ \emptyset $.
+\begin{code}
+\>[2]\AgdaFunction{$\emptyset$}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaRecord{Lang}\AgdaSpace{}%
 \AgdaBound{A}\<%
 \\
 %
-\>[6]\AgdaField{tl}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaRecord{Stream}\AgdaSpace{}%
+\>[2]\AgdaField{$\nu$}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{$\emptyset$}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{false}\<%
+\\
+%
+\>[2]\AgdaField{$\delta$}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{$\emptyset$}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{$\emptyset$}\AgdaSpace{}%
 \AgdaBound{A}\<%
 \end{code}
+\dedukti{
+  &\ctg{\emptyset} : \Pi A :  \ctb{U}~(\ctb{set~z}). \ctb{El}~(\ctg{Lang}~A)~~(\text{written as }\ctg{\emptyset}_A) &\text{($ \ctg{\emptyset} $-decl)}\\
+  &\ctg{\nu}_{\_}~\ctg{\emptyset}_{\_} \red \ctg{false}&\text{($ \ctg{\emptyset} $-red1)}\\
+  &\ctg{\delta}_{\_}~\ctg{\emptyset}_{A}~\_ \red \ctg{\emptyset}_A&\text{($ \ctg{\emptyset} $-red2)}  
+}
 
-We can then define corecursive functions by copattern matching by defining how the value produced by the function reduces when eliminated through each one of the record's projections. For instance, in order to define $ natStream : \N \to Stream~\N$ we must explain how $ natStream~n $ reduces when we inspect the fields $ hd $ and $ tl $. Note that, as the term $ natStream~(n+1) $ does not reduced by itself, but only when eliminated through a projection, this system is terminating. 
-
+Given two languages $ L_1, L_2 : Lang~A $ we can also define the sum $L_1 \uplus L_2 $ by stating that $ \nu~(L_1 \uplus L_2)$ is true if it is also the case for some $ L_1 $ or $ L_2 $, and for each $ x : A $, $ \delta~(L_1 \uplus L_2)~y $ is defined as the sum of $ a^{-1}L_1 $ and $ a^{-1}L_2 $ (thus, by doing a corecursive call).
 \begin{code}
-\>[2]\AgdaFunction{natStream}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Nat}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaRecord{Stream-Nat}
-\\
-%
-\>[2]\AgdaField{hd}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{natStream}\AgdaSpace{}%
-\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaBound{n}\<%
-\\
-%
-\>[2]\AgdaField{tl}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{natStream}\AgdaSpace{}%
-\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaFunction{natStream}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{succ}\AgdaSpace{}%
-\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
-\end{code}
-
-In order to compare both presentations of coinduction, we can also look at how the $ n $-th function can be defined in this setting. Note that as $ n $-th is defined by recursion (in its first argument), and not by corecursion, it uses projections in a fundamentally different way from $ natStream $. Whereas $ natStream $ uses them to explain how the value of the function reduces, $ n $-th uses projections in order to access the fields of the stream $ st $, which is given as second argument. Also note a very important change here, when comparing with the function $ n $-th defined for musical coinduction: because with copattern matching coinduction we only have coinductive types with one constructor, which in this case is the constructor $ \_::\_ $, then all streams are infinite in this case, and thus this function can be total.
-
-  \begin{code}
-\>[2]\AgdaFunction{nth}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Nat}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaRecord{Stream}\AgdaSpace{}%
-\AgdaDatatype{Nat}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Nat}\<%
-\\
-%
-\>[2]\AgdaFunction{nth}\AgdaSpace{}%
-\AgdaInductiveConstructor{zero}\AgdaSpace{}%
-\AgdaBound{st}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaField{hd}\AgdaSpace{}%
-\AgdaBound{st}\<%
-\\
-%
-\>[2]\AgdaFunction{nth}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{succ}\AgdaSpace{}%
-\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaBound{st}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaFunction{nth}\AgdaSpace{}%
-\AgdaBound{n}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaField{tl}\AgdaSpace{}%
-\AgdaBound{st}\AgdaSymbol{)}\<%
-\end{code}
-
-
-We remark that whereas both musical and copattern matching coinduction solve the problem of non-termination, when using copattern matching coinduction we do not have to deal with control operators, and thus we have a much more natural and user-friendly way of using coinduction.
-
-A last remark is that, even though in this setting coinductive types are expressed as records, and we saw in subsection x that most records enjoy eta-conversion, this is disabled for coinductive records, as it can lead to non-termination issues. Indeed, if we were to try to eta-expand $ natStream~0 $ we would have the infinite unraveling \[
-  natStream~0 \red Record\{hd=0; tl=natStream~1\} \red Record\{hd=0; tl=Record\{hd=1; tl=natStream~2\}\} \red ...
-  \,,\]where $ Record $ is the generic constructor for records.
-
-\redbold{Synctactic characterisation of productivity}
-
-When discussing the syntactic characterisation of coinduction in subsection x, we saw that the definition of coinductive functions had to follow a certain pattern. Namely, the body of the function must be directly equal to an instance on a constructor, which then should guard any corecursive call, as is the case in \[
-  natStream~n = n :: (natStream~(n + 1))
-  \,.\]
-
-This syntactic criterion is enforced by Agda in order to guarantee that the function is productive. For instance, the previous definition of $ natStream $ given on the setting of musical coinduction follows this criterion, but the following definition of the function $ filter $ on streams gets rejected, as the body of the first clause is not directly equal to an instance of a constructor. 
-
-\begin{code}
-\>[2]\AgdaFunction{filter}\AgdaSpace{}%
+\>[2]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}$\uplus$\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{A}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaPrimitiveType{Set}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{A}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Bool}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Stream}\AgdaSpace{}%
+\AgdaRecord{Lang}\AgdaSpace{}%
 \AgdaBound{A}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Stream}\AgdaSpace{}%
+\AgdaRecord{Lang}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaRecord{Lang}\AgdaSpace{}%
 \AgdaBound{A}\<%
 \\
 %
-\>[2]\AgdaFunction{filter}\AgdaSpace{}%
-\AgdaBound{f}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{hd}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{$ :: $}}\AgdaSpace{}%
-\AgdaBound{tl}\AgdaSymbol{)}\AgdaSpace{}%
+\>[2]\AgdaField{$\nu$}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\uplus$}}\AgdaSpace{}%
+\AgdaBound{b}\AgdaSymbol{)}%
+\>[14]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaField{$\nu$}\AgdaSpace{}%
+\AgdaBound{a}%
+\>[22]\AgdaOperator{\AgdaFunction{$\lor$}}\AgdaSpace{}%
+\AgdaField{$\nu$}\AgdaSpace{}%
+\AgdaBound{b}\<%
+\\
+%
+\>[2]\AgdaField{$\delta$}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\uplus$}}\AgdaSpace{}%
+\AgdaBound{b}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaField{$\delta$}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\uplus$}}\AgdaSpace{}%
+\AgdaField{$\delta$}\AgdaSpace{}%
+\AgdaBound{b}\AgdaSpace{}%
+\AgdaBound{x}\<%
+\end{code}
+\dedukti{
+  &\ctg{\uplus} : \Pi A :  \ctb{U}~(\ctb{set~z}). \ctb{El}~(\ctg{Lang}~A) \to \ctb{El}~(\ctg{Lang}~A) \to \ctb{El}~(\ctg{Lang}~A)~~(\text{written infix as }\ctg{\uplus}_A) &\text{($ \ctg{\uplus} $-decl)}\\
+  &\ctg{\nu}_{\_}~(a~\ctg{\uplus}_A~b) \red (\ctg{\nu}_A~a)~\ctg{\lor}~(\ctg{\nu}_A~b)&\text{($ \ctg{\uplus} $-red1)}\\
+  &\ctg{\delta}_{\_}~(a~\ctg{\uplus}_A~b)~x\red (\ctg{\delta}_A~a~x)~\ctg{\uplus}_A~(\ctg{\delta}_A~b~x)&\text{($ \ctg{\uplus} $-red2)}
+}
+
+We can also try to do the same with the product of two languages. Given $ L_1, L_2 $ we have $ \varepsilon \in   L_1 \times L_2$ if and only if $ \varepsilon \in L_1, L_2 $. The definition of $ \delta $ is a bit more tricky: given a letter $ x $ we do a case analysis on $ \nu~L_1 $. If $ L_2 $ do not contain the empty word, then the words in $ x^{-1}(L_1 \times L_2) $ are those of the form $ w_1w_2 $, where $ xw_1 \in L_1 $ and $ w_2 \in L_2 $, that is, in $ \delta~L_1~x \times L_2 $. If we have $ \varepsilon \in L_1 $ then in additional to the previous words, we also have the $ w $ such that $ xw_2 \in L_2 $, that is, the words in $ \delta~L_2~x $.
+
+This gives the following definition of $ \times $ in \Agda{}. 
+
+\begin{code}
+\>[2]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}$\times$\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{∀}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaRecord{Lang}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaRecord{Lang}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaRecord{Lang}\AgdaSpace{}%
+\AgdaBound{A}\<%
+\\
+%
+\>[2]\AgdaField{$\nu$}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\times$}}\AgdaSpace{}%
+\AgdaBound{b}\AgdaSymbol{)}%
+\>[14]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaField{$\nu$}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\land$}}\AgdaSpace{}%
+\AgdaField{$\nu$}\AgdaSpace{}%
+\AgdaBound{b}\<%
+\\
+%
+\>[2]\AgdaField{$\delta$}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\times$}}\AgdaSpace{}%
+\AgdaBound{b}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{if}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{f}\AgdaSpace{}%
-\AgdaBound{hd}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaField{$\nu$}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{then}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{hd}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{$ :: $}}\AgdaSpace{}%
-\AgdaOperator{\AgdaCoinductiveConstructor{$\sharp$}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{filter}\AgdaSpace{}%
-\AgdaBound{f}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaField{$ \flat $}\AgdaSpace{}%
-\AgdaBound{tl}\AgdaSymbol{)))}\AgdaSpace{}%
+\AgdaBound{(}\AgdaField{$\delta$}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\times$}}\AgdaSpace{}%
+\AgdaBound{b)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\uplus$}}\AgdaSpace{}%
+\AgdaField{$\delta$}\AgdaSpace{}%
+\AgdaBound{b}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{else}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{filter}\AgdaSpace{}%
-\AgdaBound{f}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaField{$ \flat $}\AgdaSpace{}%
-\AgdaBound{tl}\AgdaSymbol{))}\<%
-\\
-%
-\>[2]\AgdaFunction{filter}\AgdaSpace{}%
-\AgdaBound{f}\AgdaSpace{}%
-\AgdaInductiveConstructor{[]}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{[]}\<%
+\AgdaField{$\delta$}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{$\times$}}\AgdaSpace{}%
+\AgdaBound{b}\<%
 \end{code}
 
-It is easy to see why this function cannot be accepted, as by supplying a function that is false everywhere and a stream which is infinite we get a calculation that never stops. However, this criterion is also sometimes too restrictive, and does not detect all productive functions. For instance, the following implementation of $ natStream $ is extensionally equal to the one previously presented, however it gets rejected by \Agda{} because the corecursive call is not a direct argument to the constructor (we also say that it is not guarded by a constructor). In order to remedy this \Agda{} also allows the use of \textit{sized types} to show productivity, however as this is not the focus of this work we will not discuss them here.
+However, if we try to typecheck this proof, we actually get the error ``Termination checking failed for the following functions: \_×\_''. In order to understand why, remember from section \ref{sec:coind} that in order for a function to be corecursive, its body needs to start with a constructor from the coinductive type in the codomain. But in the case of $ \times $ this is clearly not true, as we start with an if-then-else statement, and thus \Agda{} is not able to automatically check that the given definition is terminating.
 
-\begin{code}
-\>[2]\AgdaFunction{natStream-fail}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Nat}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Stream}\AgdaSpace{}%
-\AgdaDatatype{Nat}\<%
-\\
-%
-\>[2]\AgdaFunction{natStream-fail}\AgdaSpace{}%
-\AgdaBound{n}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaBound{n}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{::}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaOperator{\AgdaFunction{if}}\AgdaSpace{}%
-\AgdaInductiveConstructor{true}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{then}}\AgdaSpace{}%
-\AgdaOperator{\AgdaCoinductiveConstructor{$\sharp$}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{natStream-fail}\AgdaSpace{}%
-\AgdaBound{(n+1)}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{else}}\AgdaSpace{}%
-\AgdaOperator{\AgdaCoinductiveConstructor{$\sharp$}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{natStream-fail}\AgdaSpace{}%
-\AgdaBound{(n+1)}\AgdaSymbol{))}\<%
-\end{code}
+The way proposed in \cite{abelequational} to solve this problem is to use size types, which are size annotations allowing to help \Agda{} to see that a definition is terminating. This enhances the expressivity of coinduction, as one can then code functions and make proofs with less syntactic constraints. Unfortunately, at the present \AgdaDedukti{} does not support  the translation of sized types. Even thought \Dedukti{} does not check the termination by itself, and thus does not need the information that sized types bring, they also cause typechecking problems, and thus we would need to adapt the encoding in order to treat them.
 
+One possibility in to erase all those annotations during the translator phase, and that is what we plan to implement on the future. However, for the time being a temporary solution is to mark as terminating the functions that \Agda{} is not capable of automatically proving to terminate. Of course, this risks compromising the soundness of the proofs, as \Agda{} simply ignores the termination checking phase for the concerned functions. However, if we are able to show with sized types that such functions terminate, we can just manually erase the sized types and mark the functions as terminating, before using the translator \AgdaDedukti{}.
 
-This syntactic criterion is also enforced when using copattern matching coinduction. However, as in this setting corecursive functions are defined through projections, the body of the function is already always equal to an instance of the only constructor. For instance, a corecursive definition producing a stream and defined by copattern matching as $ hd~(f~\vec{x}) = y_{hd} $, $ tl~(f~\vec{x})= y_{tl}$ can always be reassembled into an instance of the constructor as $f~\vec{x} =  y_{hd} :: y_{tl} $. This rules out functions like $ filter $, as we can see that there is no way of writing them in this setting.
-
-Therefore, the only restriction in this case is that the term $ y_{tl} $ must start with a corecursive call. For instance, the definition of $ natStream $ that we gave when presenting copattern matching coinduction satisfies this criteria, as the clause defining the tail is defined by \[
-tl~(natStream~n) = natStream~(n+1)
-\] and thus starts with a corecursive call. However, by reusing the same idea as the one used on the implementation of $ natStream$-$fail $, we can build the following function, which does not satisfy the criteria and is therefore rejected, even thought it is productive. 
-
-\begin{code}
-  \>[2]\AgdaFunction{natStream-fail}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Nat}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaRecord{Stream}\AgdaSpace{}%
-\AgdaDatatype{Nat}\<%
-\\
-%
-\>[2]\AgdaField{hd}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{natStream-fail}\AgdaSpace{}%
-\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaBound{n}\<%
-\\
-%
-\>[2]\AgdaField{tl}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{natStream-fail}\AgdaSpace{}%
-\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{=}%
-\>[22]\AgdaOperator{\AgdaFunction{if}}\AgdaSpace{}%
-\AgdaInductiveConstructor{true}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{then}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{natStream-fail}\AgdaSpace{}%
-\AgdaBound{(n+1)}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{else}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{natStream-fail}\AgdaSpace{}%
-\AgdaBound{(n+1)}\AgdaSymbol{)}\<%
-\end{code}
-
-\subsection{Coinduction in the $ \boldsymbol \lambda \boldsymbol \Pi $-calculus modulo rewriting}
-\label{subsec:coind}
-
-
-In this subsection, we will show how the coinduction of \Agda{} can be expressed in the $ \lambda \Pi $-calculus modulo rewriting. We reuse the same conventions established in X to represent \Dedukti{} definitions. In particular, we also ourselves once again to write some arguments as subscripts when this simplifies the notation, for instance we will write $ \ctb{\flat}_A~M $ as a simplification of $ \ctb{\flat}~A~M $. Finally, we will use a superscript as in $ \ctg{A^{\eighthnote}} $ when translating the musical version of $ A $ and as in $ \ctg{A^{co}} $ when translating the copattern matching version of $ A $.
-
-\redbold{Musical coinduction}
-
-To encode musical coinduction, we first start by declaring constants for the control operators. Note that there is no constant for $ \sharp $ in the translation, as we will explain after.
+Using this strategy we can translate functions such as $ \times $, and in this case we have the following declarations in \Dedukti{}.
 \dedukti{
-  &\ctb{\infty} : \ctb{U}~(\ctb{Set}~\ctb{z}) \to \ctb{U}~(\ctb{Set}~\ctb{z}) & \text{($\ctb{\infty}$-decl)}\\
-  &\ctb{\flat} : \Pi A : \ctb{U}~(\ctb{Set}~\ctb{z}). \ctb{El}~(\ctb{\infty}~A) \to \ctb{El}~A~~(\text{written as }\ctb{\flat}_A) & \text{($\ctb{\flat}$-decl)}
-  }
-In order to encode a coinductive type declaration, we proceed the same as when encoding an inductive type. We first declare a constant to define the type itself and then we declare constants to define the constructors of the type. For instance, to define the type $ Stream $ we define following constants, the first representing the declaration of the type, and the last two the declaration of the constructors.
-\dedukti{
-  &\ctg{Stream^{\eighthnote}} : \ctb{U}~(\ctb{Set}~\ctb{z}) \to \ctb{U}~(\ctb{Set}~\ctb{z}) & \text{($\ctg{Stream^{\eighthnote}}$-decl)}\\
-  &\ctg{::} : \Pi A : \ctb{U}~(\ctb{Set}~\ctb{z}).\ctb{El}~A \to \ctb{El}~(\ctb{\infty}~(\ctg{Stream^{\eighthnote}}~A)) \to \ctb{El}~(\ctg{Stream^{\eighthnote}}~A)~~(\text{written infix as }\ctg{::}_A)& \text{($\ctg{::}$-decl)}\\
-  &\ctg{[]} : \Pi A : \ctb{U}~(\ctb{Set}~\ctb{z}).\ctb{El}~(\ctg{Stream^{\eighthnote}}~A)~~(\text{written as }\ctg{[]}_A)& \text{($\ctg{[]}$-decl)}
-}  
-This generalizes the encoding of inductive types and is fairly straightforward, but the interesting part comes when encoding corecursive functions. If we were to define a constant $ \ctb{\sharp}_A $, as done with $ \ctb{\flat}_A $, and translate the definitions directly, we would have the following definition for $\ctg{natStream^{\eighthnote}} $.
-\dedukti{
-  &\ctg{natStream^{\eighthnote}} : \ctb{El}~\ctg{\N} \to \ctb{El}~(\ctg{Stream^{\eighthnote}}~\ctg{\N})& \text{($\ctg{natStream^{\eighthnote}}$-decl)}\\
-  &\ctg{natStream^{\eighthnote}}~n \red n~\ctg{::}_{\ctg{\N}}~(\ctb{\sharp}_{\ctg{\N}}~(\ctg{natStream^{\eighthnote}}~(\ctg{succ}~n)))& \text{($\ctg{natStream^{\eighthnote}}$-red)}
-  }
-However, in this setting we cannot forbid reductions which happen under a $ \ctb{\sharp}_A $ sign, as done in the semantics of \Agda. This means that this rule causes non-termination, as we have the infinite chain \[
-\ctg{natStream^{\eighthnote}}~n \red n~\ctg{::}_{\ctg{\N}}~(\ctb{\sharp}_{\ctg{\N}}~(\ctg{natStream^{\eighthnote}}~(\ctg{succ}~n))) \red n~\ctg{::}_{\ctg{\N}}~(\ctb{\sharp}_{\ctg{\N}}~((\ctg{succ}~n)~\ctg{::}_{\ctg{\N}}~(\ctb{\sharp}_{\ctg{\N}}~(\ctg{natStream^{\eighthnote}}~(\ctg{succ}~(\ctg{succ}~n)))))) \red ...
-  \,.\]
-
-Therefore, we do not proceed like this. Instead, we apply the idea also used in the internal syntax representation of \Agda{} to represent a function using two versions. In the case of $ natStream $ we have the following declarations.
-\dedukti{
-  &\ctg{natStream^{\eighthnote}} : \ctb{El}~\ctg{\N} \to \ctb{El}~(\ctg{Stream^{\eighthnote}}~\ctg{\N})& \text{($\ctg{natStream^{\eighthnote}}$-decl)}\\
-  &\ctg{\sharp\text{-}natStream^{\eighthnote}} : \ctb{El}~\ctg{\N} \to \ctb{El}~(\ctg{\infty}~(\ctg{Stream^{\eighthnote}}~\ctg{\N}))& \text{($\ctg{\sharp\text{-}natStream^{\eighthnote}}$-decl)}
-  }
-The idea here is that each corecursive function will have its halted version, which we can use in corecursive calls without non-termination problems. In this setting, an application of $ \sharp $ to a corecursive call is translated into the halted version of it. For instance, to finish the definition of $ natStream^{\eighthnote} $ we declare the following rewrite rules.
-\dedukti{
-  &\ctg{natStream^{\eighthnote}}~n\red n \ctg{::} (\ctg{\sharp\text{-}natStream^{\eighthnote}}~(\ctg{succ}~n))& \text{($\ctg{natStream^{\eighthnote}}$-red)}\\
-  &\ctb{\flat}_{\ctg{\N}}~(\ctg{\sharp\text{-}natStream^{\eighthnote}}~n) \red \ctg{natStream^{\eighthnote}}~n& \text{($\ctg{\sharp\text{-}natStream^{\eighthnote}}$-red)}
-  }
-The first rewrite rule corresponds to the definition of the function, whereas the second allows to transform the halted version of the function into a computing one, through the $ \ctg{\flat} $ symbol. Note that, as $ \ctg{\sharp \text{-} natStream^{\eighthnote}}~(\ctg{succ}~n) $ does not reduce by itself, but only when under a $ \ctg{\flat} $, these rewrite rules are terminating.
-
-\redbold{Copattern matching coinduction}
-
-Whereas the encoding of musical coinduction needs the duplication of function symbols in order to eliminate the $ \sharp $ operator, we will see that copattern matching coinduction admits a much simple encoding, as we can obtain terminating corecursive definitions by just orienting the clauses defining corecursive functions.
-
-Firs, in order to encode a coinductive type declaration, we declare once again a constant to represent the type. However, instead of declaring constants to define the constructors, we now declare constants to define the projections. The type $ Stream^{co} $ can for instance be represented by the following constants.
-\dedukti{
-  &\ctg{Stream^{co}} : \ctb{U}~(\ctb{set}~\ctb{z}) \to \ctb{U}~(\ctb{set}~\ctb{z})& \text{($\ctg{Stream^{co}}$-decl)}    \\
-  &\ctg{hd} : \Pi A : \ctb{U}~(\ctb{set}~\ctb{z}). \ctb{El}~(\ctg{Stream^{co}}~A) \to \ctb{El}~A~~(\text{written as }\ctg{hd}_A)& \text{($\ctg{hd}$-decl)}\\
- &\ctg{tl} : \Pi A : \ctb{U}~(\ctb{set}~\ctb{z}). \ctb{El}~(\ctg{Stream^{co}}~A) \to \ctb{El}~(\ctg{Stream^{co}}~A)~~(\text{written as }\ctg{tl}_A)& \text{($\ctg{tl}$-decl)}  
-}  
-Now corecursive functions can be translated by declaring a constant to represent the function and adding rewriting rules corresponding to the clauses. In the case of $ natStream $ we have the following declarations.
-\dedukti{
-  &\ctg{natStream^{co}} : \ctb{El}~\ctg{\N} \to \ctb{El}~(\ctg{Stream^{co}~\N})& \text{($\ctg{natStream^{co}}$-decl)}    \\
-  &\ctg{hd}_{\ctg{\N}}~(\ctg{natStream^{co}}~n) \red n & \text{($\ctg{natStream^{co}}$-red1)}    \\
-  &\ctg{tl}_{\ctg{\N}}~(\ctg{natStream^{co}}~n) \red \ctg{natStream^{co}}~(\ctg{succ}~n)& \text{($\ctg{natStream^{co}}$-red2)}   
-}  
-
-Note that, as no rewrite rule allows to reduce $ \ctg{natStream^{co}}~(\ctg{succ}~n) $ by itself, the defined rewrite rules are terminating. 
-
-\subsection{Examples on translating coinduciton}
-\label{subsec:label}
-
-
-In order to understand how  the encoding generalizes for other cases, we consider a series of examples.
-
-\redbold{$ n $-th}
-
-We start with the function $ n $-th, which was already discussed for both presentations of coinduction. 
-
-To translate the version using musical coinduction we first need to translate the inductive type constructor $ Maybe $. We proceed as usual, declaring one constant to encode the type and one constant for each constructor.
-\dedukti{
-  &\ctg{Maybe} : \ctb{U}~(\ctb{Set}~\ctb{z}) \to \ctb{U}~(\ctb{Set}~\ctb{z}) & \text{($\ctg{Maybe}$-decl)}\\
-  &\ctg{just} : \Pi A : \ctb{U}~(\ctb{Set}~\ctb{z}).\ctb{El}~A \to \ctb{El}~(\ctg{Maybe}~A)~~(\text{written as }\ctg{just}_A)& \text{($\ctg{just}$-decl)}\\
-  &\ctg{nothing} : \Pi A : \ctb{U}~(\ctb{Set}~\ctb{z}).\ctb{El}~(\ctg{Maybe}~A)~~(\text{written as }\ctg{nothing}_A)& \text{($\ctg{nothing}$-decl)}
-}  
-
-Now, in order to encode $ n $-th, we declare only one constant to represent the function, and then the expected rewrite rules. Even thought we saw that the translation of corecursive functions written with musical coinduction uses two constant declarations, $ n $-th is not corecursive but recursive, and as such admits a straightforward representation with just one constant.
-\dedukti{
-  &\ctg{n\text{-}th^{\eighthnote}} : \ctb{El}~\ctg{\N} \to \ctb{El}~(\ctg{Stream^{\eighthnote}}~\ctg{\N}) \to \ctb{El}~(\ctg{Maybe}~\ctg{\N})& \text{($\ctg{n\text{-}th^{\eighthnote}}$-decl)}\\
-  &\ctg{n\text{-}th^{\eighthnote}}~\ctg{zero}~(x~\ctg{::}_{\ctg{\N}}~l)~\red \ctg{just}_{\ctg{\N}}~x& \text{($\ctg{n\text{-}th^{\eighthnote}}$-red1)}\\  
-  &\ctg{n\text{-}th^{\eighthnote}}~(\ctg{succ}~n)~(x~\ctg{::}_{\ctg{\N}}~l)~\red \ctg{n\text{-}th^{\eighthnote}}~n~(\ctb{\flat}_{\ctg{\N}}~l)& \text{($\ctg{n\text{-}th^{\eighthnote}}$-red2)}\\
-  &\ctg{n\text{-}th^{\eighthnote}}~\_~\ctg{[]}_{\ctg{\N}}~\red \ctg{nothing}_{\ctg{\N}}& \text{($\ctg{n\text{-}th^{\eighthnote}}$-red3)}
-  }
-  In order to test the definitions of $ \ctg{n\text{-}th^{\eighthnote}} $ and $ \ctg{natStream^{\eighthnote}} $ we can try to compute the normal form of $ \ctg{n\text{-}th^{\eighthnote}}~\ctg{1}~(\ctg{natStream^{\eighthnote}}~\ctg{6}) $, where we write numerals in decimal notation to simplify the presentation. This gives the following rewrite sequence, which computes to the value $ \ctg{just}_{\ctg{\N}}~\ctg{7} $ as expected.
-  \begin{align*} 
-&&   \ctg{n\text{-}th^{\eighthnote}}~\ctg{1}~(\ctg{natStream^{\eighthnote}}~\ctg{6}) &\red \ctg{n\text{-}th^{\eighthnote}}~\ctg{1}~(\ctg{6}~\ctg{::}_{\ctg{\N}}~(\ctg{\sharp\text{-}natStream^{\eighthnote}}~\ctg{7}))&&\text{($\ctg{natStream^{\eighthnote}}$-red)}&\\
-  &&                                          &\red \ctg{n\text{-}th^{\eighthnote}}~\ctg{0}~(\ctb{\flat}_{\ctg{\N}}~(\ctg{\sharp\text{-}natStream^{\eighthnote}}~\ctg{7})) &&\text{($\ctg{n\text{-}th^{\eighthnote}}$-red2)}&\\
-&&                                            &\red \ctg{n\text{-}th^{\eighthnote}}~\ctg{0}~(\ctg{natStream^{\eighthnote}}~\ctg{7}) &&\text{($\ctb{\flat}$-red)}&\\
-  &&                                          &\red \ctg{n\text{-}th^{\eighthnote}}~\ctg{0}~(\ctg{7}~\ctg{::}_{\ctg{\N}}~(\ctg{\sharp\text{-}natStream^{\eighthnote}}~\ctg{8}))&&\text{($\ctg{natStream^{\eighthnote}}$-red)}&\\
-    &&                                        &\red \ctg{just}_{\ctg{\N}}~\ctg{7}&&\text{($\ctg{n\text{-}th^{\eighthnote}}$-red1)}&
-  \end{align*}
-
-  We can also look at the translation of $ n\text{-}th $ when using copattern-matching coinduction.
-  \dedukti{
-    &\ctg{n\text{-}th^{co}} : \ctb{El}~\ctg{\N} \to \ctb{El}~(\ctg{Stream^{co}}~\ctg{\N}) \to \ctb{El}~\ctg{\N}& \text{($\ctg{n\text{-}th^{co}}$-decl)}\\
-    &\ctg{n\text{-}th^{co}}~\ctg{zero}~x \red \ctg{hd}_{\ctg{\N}}~x& \text{($\ctg{n\text{-}th^{co}}$-red1)}\\
-    &\ctg{n\text{-}th^{co}}~(\ctg{succ}~n)~x \red \ctg{n\text{-}th^{co}}~n~(\ctg{tl}_{\ctg{\N}}~x)&\text{($\ctg{n\text{-}th^{co}}$-red2)}
-  }
-  Once again, we can try to compute the normal form of $ \ctg{n\text{-}th^{co}}~\ctg{1}~(\ctg{natStream^{co}}~\ctg{6}) $ to see how the computation behaves.
-  \begin{align*} 
-    &&   \ctg{n\text{-}th^{co}}~\ctg{1}~(\ctg{natStream^{co}}~\ctg{6}) &\red \ctg{n\text{-}th^{co}}~\ctg{0}~(\ctg{tl}_{\ctg{\N}}~(\ctg{natStream^{co}}~\ctg{6}))&&\text{($\ctg{n\text{-}th^{co}}$-red2)}&\\
-    && &\red \ctg{n\text{-}th^{co}}~\ctg{0}~(\ctg{natStream^{co}}~\ctg{7})&&\text{($\ctg{natStream^{co}}$-red2)}&\\
-    && &\red \ctg{hd}_{\ctg{\N}}~(\ctg{natStream^{co}}~\ctg{7})&&\text{($\ctg{n\text{-}th^{co}}$-red1)}&\\
-    && &\red \ctg{7}&&\text{($\ctg{natStream^{co}}$-red1)}&
-  \end{align*}
-  
-
-  
-  \[
-\ctg{n\text{-}th}~1~(\ctg{natStream}~6) \red \ctg{n\text{-}th}~1~(6~\ctg{::}_{\ctg{\N}}(\ctg{\sharp\text{-}natStream}~7)) \red \ctg{n\text{-}th}~0~(\ctg{natStream}~7) \red \ctg{n\text{-}th}~0~(7~\ctg{::}_{\ctg{\N}}(\ctg{natStream}~8)) 
-  \,.\]
-  
-
-
-\section{Practical Implementation}
-\label{sec:impl}
-
-In the previous section, we saw how coinduction can be used in \Agda{} and how such definitions can be translated in the $ \lambda \Pi $-calculus modulo rewriting. We now detail the practical details of how this translation is implemented in \AgdaDedukti{}.
-
-A large part of this internship was also dedicated to restarting the development of \AgdaDedukti{}, which was halted since September of 2020, when Guillaume Genestier had to stop its development to write his PhD thesis. Therefore, we also detail many other contributions that were made for improving it.
-
-\subsection{Translation of Coinduction}
-\label{subsec:coind}
-
-As already mentioned, the proposed encoding of coinduction in the $ \lambda \Pi $-calculus modulo rewriting is based on the representation of the internal syntax of \Agda. Therefore, the main challenge here was adapting \AgdaDedukti{} to correctly translate the internal representations into \Dedukti{}, something that was not done in Genestier's prototype. The main problem the original prototype had and which prevented the translation of coinduction lied on the translation of clauses defining corecursive functions.
-
-A clause defining a normal recursive function $ f $ is generally of the form $ f~\vec{x} = y $, and therefore \Agda{} internally represents a clause by a head symbol $ f $, by a list of applied patterns $ \vec{x} $ and a body $ y $. However, when we were discussing the encoding of coinduction we saw that corecursive clause definitions do not always satisfy this criterion.
-
-In the case of musical coinduction, each function declaration $ f $ is duplicated into a halted version $ \sharp $-$ f $. The clauses of $ f $ itself are of the form $ f~\vec{x}=y $, however the only clause defining $ \sharp $-$ f $ is \[
-  \flat~(\sharp\text{-}f~\vec{x}) = f~\vec{x}
-  \,.\]In order to represent such a clause in the form $ f~\vec{x} = y $, \Agda{} puts projections in \textit{postfix form}. This means the previous clause is represented internally as $ \sharp\text{-}f~\vec{x}~.\flat = f~\vec{x} $, where the dot in $ .\flat $ means that this application should be translated in prefix form.
-
-This happens even more frequently when translating copattern matching corecursive functions. Indeed, a corecursive function $ f $ defined by copattern matching will have its clauses in the form $ \pi~(f~\vec{x})~\vec{z} = y $, which is then represented in the form $ f~\vec{x}~.\pi~\vec{z} = y $. For instance, the first clause defining the function $ natStream $ was represented internally as $ natStream~n~.hd = n $.
-
-As Genestier's prototype did not take this into account, such functions declarations were translated in an incorrect way. For instance, the first clause of $ natStream $ was being translated as \[
-natStream~n~hd \red n
-  \,,\]whose left side is not even well typed, as $ natStream~n $ is of type $ Stream~Nat $ and $ hd $ is of type $ \{A : Set\} \to Stream~A \to A$.
-
-Therefore, in order to correctly translate these clauses we had to change the code implementing the translation of clauses in order to properly account for this representation. As the original code was not documented, this turned out to be not so trivial. Moreover, when representing a clause $ f~\vec{x} = y $ \Agda{} does not store internally all the type information of the left-hand side, but only of the head symbol $ f $, this information needs to be reconstructed while translating patterns, which makes the process a bit tricky.
-
-Finally, we also had to adapt other parts of the translator which did not interact properly with coinduction. Explicitly, the translation of eta-expansion (see details on Ap b) was previously treating all records in an homogeneous way, meaning that even coinductive records were translated with eta-expansion in \Dedukti{}. However, we saw in section x that eta-expansion causes non-termination when added to coinductive records. This did not cause a problem before, as coinduction was not a feature supported by the translator, but as this is now the case we had to adapt the translation in order to only translate with eta-expansion the records which also have it in \Agda{}.
-
-This implementation allowed us to translate automatically multiple \Agda{} files containing coinductive definitions and corecursive functions into \Dedukti{}. Some of these translated files can be found in INSERT-NEW-GIT-REPO-WITH-TRANSLATIONS.
-
-
-\subsection{Agda2Lambdapi}
-\label{subsec:lambdapi}
-
-We had previously discussed that, in order to use the $ \lambda \Pi $-calculus modulo rewriting in practice, researchers at Deducteam have developed two implementations \Dedukti{} and \Lambdapi{}. Whereas \Dedukti{} will probably be discontinued, \Lambdapi{} is under active development and extends it in multiple ways. \Lambdapi{} features most notably interactive proof development, with a proof mode and tactics, but also other features such as efficient rewriting, metavariables and implicit arguments. As the prototype translator \AgdaDedukti{} was only capable of translating into \Dedukti{}, and not \Lambdapi{}, the extension of the translator with an Agda2Lambdapi mode was a natural goal of the internship, which would allow the translation of files into both \Dedukti{} and \Lambdapi{}.
-
-Most of the development of this new mode consisted of adapting the syntax of the output. Moreover, \Lambdapi{} files must state explicitly in their beginning which other files they use, something which was not needed in \Dedukti{}, and therefore the translation of each file now needed to take this into account. However, the most challenging part of this development was dealing with AC symbols, which are used to implement the translation of universe polymorphism.
-
-\redbold{Dealing with AC symbols}
-
-Associative commutative (or just AC) symbols, are symbols which satisfy an associative commutative equational theory. For instance, if we declare $ + : Nat \to Nat \to Nat $ as being AC, then we automatically get the conversions $ x + (y + z) \equiv (x + y) + z $ and $ x + y \equiv y + x$. Note that, even though we could add the conversion $ x + (y + z) \equiv (x + y) + z $ by means of the rewriting rule \[
-x + (y + z) \red (x + y) + z
-\,,\]there is no way to add the conversion relation $ x + y \equiv y + x $ with a terminating rewrite system. Therefore, the ability of having AC symbols strictly enriches the capability of handling equational theories. AC symbols may also enjoy a richer type of matching, called AC matching. In the presence of AC matching, all terms of the form $ x + x $, $ x + (y_1 + x) $, $ x + (y_1 + (y_2 + x)) $, etc are matched by the rule \[
-x + x \red x
-\,,\]whereas with normal matching we would have to declare a rewrite rule \[
-x + (y_1 ... (y_k + x)...) \red x + (y_1 ... (y_{k-1} +y_k)...)
-\,.\] for each $ k $ (thus, an infinity of rewrite rules).
-
-We will not enter in all the details here, but the point is that the implementation of universe levels used both AC symbols and AC matching, which is particularly needed when using universe polymorphism. However, whereas \Dedukti{} featured both AC symbols and AC matching, \Lambdapi{} does not feature AC matching, as its implementation is complex and error-prone. Therefore, the challenge here was adapting the representation of universe levels such that AC matching was not required. In order to do so, Frédéric Blanqui introduced in \Lambdapi{} a mechanism to put terms in a canonical form internally, such that given an order on variable names, the canonical form uses the AC identities to order them. 
-
-The precise order of the variables is irrelevant, the interesting point is that the term $ x + (y_1 ... (y_k + x)...) $ will be represented either as $ x + (x + (...)) $ (case I) or $ y_{i_1} + ( ... (x + (x + ...))...) $ (case II) or $ y_{i_1} + (... (y_{i_k} + (x + x))...) $ (case III), and thus the occurrences of  $ x $ will be grouped together. This allows us to replace the rule $ x + x \red x $ using AC matching by the two rules \[
-x + x \red x
-\]matching (III) and \[
-x + (x + y) \red x + y
-\]matching (I) and (II).
-
-Using this technique, we modified with Frédéric Blanqui the encoding of universe levels in order to get rid of AC matching. This also evolved the testing of the canonical form mechanism and the reporting of multiple bugs to the development of \Lambdapi{}. This encoding allowed us then to correctly translate multiple \Agda{} files using universe polymorphism into \Lambdapi{}.
-
-
-\subsection{Adding support for latest Agda version}
-\label{subsec:label}
+  &\ctg{\times} : \Pi A :  \ctb{U}~(\ctb{set~z}). \ctb{El}~(\ctg{Lang}~A) \to \ctb{El}~(\ctg{Lang}~A) \to \ctb{El}~(\ctg{Lang}~A)~~(\text{written infix as }\ctg{\times}_A) &\text{($ \ctg{\times} $-decl)}\\
+  &\ctg{\nu}_{\_}~(a~\ctg{\times}_A~b) \red (\ctg{\nu}_A~a)~\ctg{\land}~(\ctg{\nu}_A~b)&\text{($ \ctg{\uplus} $-red1)}\\
+  &\ctg{\delta}_{\_}~(a~\ctg{\times}_A~b)~x\red \ctg{if\text{-}then\text{-}else}_A~(\ctg{\nu}_A~a)~(((\ctg{\delta}_A~a~x)~\ctg{\times}_A~b)~\ctg{\uplus}_A~(\ctg{\delta}_A~b~x))~((\ctg{\delta}_A~a~x)~\ctg{\times}_A~b)&\text{($ \ctg{\uplus} $-red2)}
+}
 
 
 
 
-\section{Future Work}
-\label{sec:future}
+% \section{(Co)induction principle from (co)algebra (finality) initiality}
+% \label{sec:label}
 
-\subsection{Universe polymorphism beyond prenex}
-\label{subsec:label}
+% On section x we saw how the recursion and corecursion arise naturally when considering F-algebras, which allows us to justify recursive and corecursive functions. However, the induction and coinduction principles, needed for doing proofs, also arise in a similiar way. To see this, we consider once more the case of lists and streams.
 
-\subsection{Interoperability between predicative and impredicative type theory}
-\label{subsec:predtoimpred}
+% A predicate on lists can also be seen as the subset $ P \subseteq List~\N$ of elements satisfying the given property. Suppose that $ P $ is closed by the constructors, that is, $ [] \in P $ and for $ n \in \N $, $ l \in P $ we have $ n~::~l \in P $. This means we have two functions $ [] : 1 \to P $ and $ (\_::\_) : \N \times P \to P$ given by $ [] : * \mapsto [] $ and $ (\_::\_) : (n, l) \mapsto n~::~l $. This can be represented categorically by the following diagrams, where $ [] : * \mapsto [] $, $ (\_::\_) : (n, l) \mapsto n~::~l $ and $ inc $ is the inclusion function.
 
-\section{Conclusion}
-\label{sec:conc}
+% \begin{center}
+% \begin{tabular}{ c c c }
+%  \begin{tikzcd}
+%   1 \arrow[r,  "*"] \arrow[d,"{[]}"] & 1 \arrow[d, "{[]}"] \\
+% P \arrow[r, "inc"] & List~\N
+% \end{tikzcd}
+%  & ~~~~ ~~~~~~~~~~~~&\begin{tikzcd}
+%   \N \times P \arrow[r,  "\N \times inc"] \arrow[d,"(\_::\_)"] & \N \times List~\N \arrow[d, "(\_::\_)"] \\
+% P \arrow[r, "inc"] & List~\N
+% \end{tikzcd}
+% \end{tabular}
+% \end{center}
+% By defining $ \alpha_P : 1 + \N \times P \to P$ by $ * \mapsto [] $ and $ (n, l) \mapsto n~::~l $, and noting that, by doing the same for $ List~\N $, we get the initial algebra, we deduce that $ inc $ is actually an F-algebra morphism, as shown by the following diagram.
+% \begin{center}
+% \begin{tikzcd}[column sep=huge]
+%   1+\N \times P \arrow[r,  "1 + \N \times inc"] \arrow[d,"\alpha_P"] & 1+\N \times List~\N \arrow[d, "\alpha_\N"] \\
+% P \arrow[r, "inc"] & List~\N
+% \end{tikzcd}
+% \end{center}
+
+% However, by initiality of $ List~\N $ we also have an F-algebra morphism $ f : List~\N \to P $, which by post-composition with $ inc $ gives an F-algebra endomorphism of $ List~\N $. But by initiality of $ List~\N $, there is exactly one such morphism, which is thus the identity, giving $ inc \circ f = id_{List~\N} $. As $ inc $ is an injection, then this can only be possible with $ P = List~\N $. This justifies the induction principle for lists, which we write by the following rule.
+
+% \begin{center}
+%   \AxiomC{$ P \subseteq List~\N $}
+%   \AxiomC{$[] \in P$}
+%   \AxiomC{$\forall (n : \N)~(l : List~\N). l \in P \Rightarrow P(n~::~l)\in P$}  
+% \TrinaryInfC{$P = List~\N $}
+% \DisplayProof
+% \end{center}
+
+% \[
+% \textbf{Ind}_{List~\N} : \Pi P : List~\N \to Prop. P~[] \to (\Pi (n : \N)~(l : List~\N). P~l \to P~(n~::~l)) \to \Pi l : List~\N. P~l
+%   \,.\]
+
+% By applying the dual argument we can also derive the coinduction principle for streams. Suppose that we have $ Stream~\N \subseteq P  $ such that for all $ l \in P $ either $ l = [] $ or $ l = n~::~l' $ with $ n \in \N $ and $ l' \in P $. This allows us to define a function $ \beta_P : P \to 1 + \N \times P $ which decomposes an element of $ P $ through a constructor, that is, $ \beta_P : [] \mapsto * $ and $ \beta_P : n~::~l \mapsto (n,l) $.
+
+% \begin{center}
+% \begin{tikzcd}[column sep=huge]
+%   Stream~\N\arrow[d,"\alpha_P"]\arrow[r,  "inc"] &P    \arrow[d, "\alpha_\N"]\\
+% 1+\N \times Stream~\N\arrow[r, "1 + \N \times inc"]    &  1+\N \times P 
+% \end{tikzcd}
+% \end{center}
+
+% Let $ f : P \to Stream~\N $. Then $ f \circ inc = id_{Stream~\N} $
+
+
+% \begin{center}
+%   \AxiomC{$Stream~\N \subseteq P   $}
+%   \AxiomC{$l \in P \Rightarrow l = [] \lor (l = n~::~l' \text{ with } l' \in P)$}
+% \BinaryInfC{$P = Stream~\N$}
+% \DisplayProof
+% \end{center}
+% \[
+%   \textbf{CoInd}_{Stream~\N} : \Pi P : Stream~\N \to Prop. (\Pi l : Stream~\N. P~l \to (empty~l + P~(tl~l))) \to \Pi l : Stream~\N \to P~l
+% \]
+
+
+%Note that by considering $ \textbf{Set}^{op} $ instead of $ \textbf{Set} $ the category of F-coalgebras becomes the one of F-algebras. 
 
 
 
 
-\newpage
-\begin{appendices}
-  \section{References}
-\bibliographystyle{abbrv}  
-\bibliography{ref}
 
-\section{Typing rules for the $ \boldsymbol \lambda \boldsymbol \Pi $-calculus modulo rewriting}
-
-The following describes typing in the $ \lambda \Pi $-calculus modulo rewriting for a given set of rewrite rules $ \mathcal{R} $. Given a context $ \Gamma $, a signature $ \Sigma $ and $ M,A \in \Lambda_{\lambda \Pi} $, we define the typing judgment $ \Sigma; \Gamma \vdash M : A $ inductively by the following deduction rules\cite{thU}. The relation $ \equiv $ in the rule Conv is the least equivalence relation containing $ \equiv_\beta $ and the context and substitution closure of the rules in $ \mathcal{R} $. In the rules Decl, Prod, Convs, Abs and Conv, the letter $ s $ stands either for $ \Type $ or $ \Kind $.
-
-\begin{samepage}
-  \begin{center}
-    \textbf{Context forming rules}
-  \end{center}
-\begin{center}
-  \AxiomC{}
-\RightLabel{Empty}
-\UnaryInfC{$\Sigma; \emptyset~\text{well-formed}$}
-\DisplayProof
-\hskip 1.5em
-\AxiomC{$\Sigma;\Gamma \vdash A : s$}
-\AxiomC{$x \notin \Gamma$}
-\RightLabel{Decl}
-\BinaryInfC{$\Sigma;\Gamma, x : A~\text{well-formed} $}
-\DisplayProof
-\end{center}
-  \begin{center}
-    \textbf{Term forming rules}
-  \end{center}
-
-\begin{center}
-  \AxiomC{$ \Sigma;\Gamma~\text{well-formed} $}
-\RightLabel{Sort}
-\UnaryInfC{$\Sigma;\Gamma \vdash \Type : \Kind$}
-\DisplayProof
-\end{center}
-\begin{center} 
-  \AxiomC{$\Sigma; \Gamma \vdash A : \Type $}
-  \AxiomC{$\Sigma; \Gamma, x : A \vdash B : s $}  
-\RightLabel{Prod}
-\BinaryInfC{$\Sigma;\Gamma \vdash \Pi x : A . B : s  $}
-\DisplayProof
-\end{center}
-\begin{center}
-\AxiomC{$\Sigma;\Gamma~\text{well-formed}$}
-\AxiomC{$ x : A \in \Gamma $}
-\RightLabel{Var}
-\BinaryInfC{$\Sigma;\Gamma \vdash x : A  $}
-\DisplayProof
-\end{center}
-\begin{center}
-\AxiomC{$\Sigma;\Gamma~\text{well-formed}$}
-\AxiomC{$c : A \in \Sigma$}
-\AxiomC{$\Sigma; \emptyset \vdash A : s $}
-\RightLabel{Cons}
-\TrinaryInfC{$\Sigma;\Gamma \vdash c : A  $}
-\DisplayProof
-\end{center}
-\begin{center}
-  \AxiomC{$\Sigma;\Gamma \vdash \Pi x : A . B : s  $}
-  \AxiomC{$\Sigma; \Gamma, x : A \vdash M : B $}
-  \RightLabel{Abs}
-\BinaryInfC{$\Sigma;\Gamma \vdash \lambda x : A . M :\Pi x : A . B  $}
-\DisplayProof
-\end{center}
-\begin{center}
-  \AxiomC{$\Sigma;\Gamma \vdash M : \Pi x : A . B  $}
-  \AxiomC{$\Sigma; \Gamma \vdash N : A $}
-  \RightLabel{App}
-\BinaryInfC{$\Sigma;\Gamma \vdash M N : B(N/x) $}
-\DisplayProof
-\end{center}
-  \begin{center}
-    \textbf{Conversion rule}
-  \end{center}
-    
-\begin{center}
-  \AxiomC{$\Sigma;\Gamma \vdash M : A $}
-  \AxiomC{$\Sigma;\Gamma \vdash B : s $}  
-  \AxiomC{$A \equiv B$}
-  \RightLabel{Conv}
-\TrinaryInfC{$\Sigma;\Gamma \vdash M : B $}
-\DisplayProof
-\end{center}
-\begin{center}
- \large \textbf{Typing rules for the $ \boldsymbol\lambda \boldsymbol\Pi $-calculus modulo rewriting}
-\end{center}
-\end{samepage}
 
 \section{End-notes}
 \label{sec:foot}
