@@ -357,61 +357,12 @@ If we take, for instance, $ A = \N $ and $ \beta_A : n \mapsto (n, n+1) $ we get
 
 We could take this clause as a definition of $natStream$, however as it refers to itself in a non well-founded way, it is clear that it can cause non-termination issues. Even though coinductive types are non well-founded by definition, in practice when dealing with them in proof assistants and programming languages, we need to have a finitary way to represent these objects, as computers can only store finite data.  We will discuss in one of the other parts how this problem can be handled.
 
-%However, in the current setting we cannot give a as nice presentation\endnote{You can try for yourself: when going through the diagram, as the function $ \beta_c $ has a codomain which is a sum, we would need to make a distinction whether we take the left or the right codomain. It's not clear how to give a clean presentation of this, as in the case for pattern matching.} as in the case of pattern matching. However, we can change things if we impose that the coinductive type must have a single constructor. Here we get rid of the constructor $ [] $ (effectively imposing all streams to be infinite), leading us to the following diagram.
-% \begin{center}
-%   \begin{tikzcd}[column sep=huge]
-%     c \arrow[r, "corec~\beta_c"] \arrow[d,"\beta_c"]& Stream~\N \arrow[d, "\beta_{Stream~\N}"]\\
-%     \N \times c \arrow[r,  "F (corec~\beta_c)"]  & \N \times (Stream~\N)
-% \end{tikzcd}
-% \end{center}
-% \textbf{New Coinduction Principle:} To define a function $ corec~\beta_c : c \to Stream~\N $, it suffices to define a function $ \beta_c : c \to \N \times c $, that is, two functions $ \beta_c^1 : c \to \N $ and $ \beta_c^2 : c \to c $.
-
-% Now we can define the function $ \beta_c $ not by making a case distinction on the constructors for the type, but rather for the arguments of its only constructor (also called the fields). The equality $  corec~\beta_c = \beta_{Stream~\N}^{-1} \circ F (corec~\beta_c) \circ \beta_c $ now gives the following equations.
-% \begin{align*}
-%   &head~(corec~\beta_c~x) = \beta^1_c~x\\
-%   &tail~(corec~\beta_c~x) = (corec~\beta_c)~(\beta^2_c~x) 
-% \end{align*}
-% This form of presenting coinduction is called copattern matching and was introduce by Abel et al in x. This presentation, which exists only for one constructor coinductive types, restores a symmetry and gives a much nicer way of using coinductive types. Let's look at an example of how to use them. If we take $ c = \N $, $ \beta^1_\N : n \mapsto n $ and $ \beta^2_\N : n \mapsto n+1 $ we get the following function, which maps $ n $ to the stream $ n, n+1, n+2, ... $.
-% \begin{align*}
-%   &head~(corec~\beta_c n) = n\\
-%   &tail~(corec~\beta_c n) = (corec~\beta_c)~(n+1)
-% \end{align*}
-
-% The derived equations for recursion and corecursion also allows us to see how they are characterized syntactically. When defining $ rec~\alpha_c $ by recursion, the definition $ (rec~\alpha_c)~(n ::l) $ can only be a function of $ n $ and $   (rec~\alpha_c)~l$. This means that any recursive call can only be made on the recursive argument of the constructor --- $ l $ in this case. We shall also remark that most proof assistants, like \textsc{Coq}, allow for a more general form of recursion, which allow for recursive calls to be performed in any argument structurally smaller.
-
-
-% On the other hand, when defining $ corec~\beta_c $ by corecursion, we can send its value either to the empty stream, or to a new instance of the constructor $ \_::\_ $, in which the second argument must be the result of a corecursive call to $ corec~\beta_c $. Therefore, the body of the corecursive function must be directly equal to an instance of the constructor, and corecursive calls must be given as direct argument to constructors, as it is the case in $   (corec~\beta_\N)~n = n :: ((corec~\beta_\N)~(n + 1)) $. When discussing the implementation of coinduction in Agda we will see in more depth these criteria.
-
 
 \subsection{The Agda proof assistant}
 \label{subsec:agda}
 
 \textsc{Agda} is a dependently-typed programming language developed in Sweden, mainly used as a proof assistant\cite{agda}. Its type system extends Martin-L\"of Type Theory\cite{martin1984intuitionistic} with many features, such as (co) inductive types, universe polymorphism, sized types, etc. On the following, we take a look at some of its main characteristics. We refer to Appendix \ref{sec:guillaume-encoding} for some more optional details.
 
-% \subsubsection{A predicative type system}
-
-% One of the main particularities of \textsc{Agda}, when compared with most proof assistants such as Coq, HOL, Lean, etc, is that \textsc{Agda}'s type system does not separate propositions from ``normal'' types. For instance, whereas in Coq the type $ \N $ of natural numbers lives in $ Set $ and the proposition true $ \top $ lives in $ Prop $, in \Agda{} both of them live in $ Set $\endnote{A hierarchy $ Prop $ of proof irrelevant types was recently added to \Agda{}, however the ``standard'' way of doing \Agda{} is to do everything with $ Set $. For instance, \Agda{}'s standard library do not use $ Prop$.}. An important consequence is that, whereas in Coq the lambda term $\lambda x : A. x $ can either be the identity function for $ A $ (if $ A : Set $) or a proof of $ A \Rightarrow A $ (if $ A : Prop $), in \textsc{Agda} the term $ \lambda x : A.x $ is both the identity and a proof of $ A \Rightarrow A $ at the same time. It all depends if we prefer to interpret $ A$ as a normal type or a type representing a proposition. Therefore, \textsc{Agda} implements a radical version of Curry-Howard, making absolutely no difference between types ans propositions.
-
-% Most proof assistants use the separation between types and propositions to treat them differently. More precisely, they normally implement a flavor of \textit{higher-order logic}, allowing propositions to be quantified over any domains. Explicitly, if $ P $ is a propositions and $ A $ is any type, we can always build $ \forall_A x. P $ and its type will always be $ Prop $, even when $ A = Prop$. This is expressed by the deduction rule
-% \begin{center} 
-%   \AxiomC{$\Sigma; \Gamma, x : A \vdash B : Prop $}  
-% \UnaryInfC{$\Sigma;\Gamma \vdash \Pi x : A . B : Prop  $}
-% \DisplayProof
-% \end{center}
-% This means that we can build propositions that talk about all propositions --- including themselves! ---, such as $ \forall_{Prop}. p \Rightarrow p $.
-
-% The ability to build such ``weird'' propositions is refereed to as \textit{impredicativity}, and it is a whole subject in its own. However, the important point to know is that, whereas propositions are usually treated impredicatively, normal types are treated predicatively. More explicitly, for normal types we usually have a stratified infinite hierarchy $ Set_0 : Set_1 : Set_2 ... $ and the deduction rule
-% \begin{center} 
-%   \AxiomC{$\Sigma; \Gamma \vdash A : Set_i $}
-%   \AxiomC{$\Sigma; \Gamma, x : A \vdash B : Set_j $}  
-% \BinaryInfC{$\Sigma;\Gamma \vdash \Pi x : A . B : Set_{max\{i,j\}}  $}
-% \DisplayProof
-% \end{center}
-% This implies that the type of $ \Pi a : Set_0. a \to a  $ is not $ Set_0$, but $ Set_1 $. Therefore, by quantifying over all elements of a certain universe $ Set_i $ we move to a higher one. As we can see, predicative systems feature a more restricted type of quantification, which avoids building objects that self-reference, such as $ \forall_{Prop} p. p \Rightarrow p $.
-
-% As \Agda{} does not separate propositions and treats them directly as types, this means that propositions are also treated predicatively. Indeed, the proposition (or the type) $ \forall_{Prop}p.  p \Rightarrow p $ is not directly representable in \Agda{}, as it is not possible to talk about all the types that live in all the $ Set_i $. However, if we restrict quantification to $ Set_0 $, this can be expressed by $ \Pi P : Set_0 . P \to P$, which now lives in $ Set_1 $.
-
-% All in all, \Agda{} has a logic that is very different from the ones of most proof assistants, in which propositions are treated as normal types and live in a predicative world.
 
 \subsubsection{Universes and type system}
 
@@ -539,23 +490,6 @@ To represent the infinite hierarchy of universes $ Set_0 : Set_1 : Set_2 : ... $
   &\ctb{Sort} : \Type& \text{($\ctb{Sort}$-decl)}\\
   &\ctb{U} : \ctb{Sort} \to \Type& \text{($\ctb{U}$-decl)}
 }
-% \begin{center}\begin{tcolorbox}[blanker,left=3mm,right=3mm,
-%   borderline vertical={2pt}{0pt}{black}, text width=170mm]
-% \abovedisplayskip=0pt% <--- remove vertical space above align  
-%   \begin{flalign*}
-%   &\ctb{Sort} : \Type& \text{($\ctb{Sort}$-decl)}\\
-%   &\ctb{U} : \ctb{Sort} \to \Type& \text{($\ctb{U}$-decl)}
-%   \end{flalign*}
-% \end{tcolorbox}\end{center}
-% \begin{tcolorbox}[ams align*, blanker,left=3mm,right=3mm,
-%   borderline vertical={2pt}{0pt}{black}]
-%   &Sort : \Type& \text{oi}&\\
-%   &U : Sort \to \Type& \text{sssoiteste}&
-% \end{tcolorbox}
-% \begin{align*}
-%   &Sort : \Type\\
-%   &U : Sort \to \Type
-% \end{align*}
 Then we define a type $ L $ to represent universe levels (it would be more appropriate to call it $ \N $, but we keep this name to the representation of natural numbers in the theory). Finally, we can define the sorts $ Set_i $ by defining a function associating a sort to each level.
 \dedukti{
   &\ctb{L} : \Type& \text{($\ctb{L}$-decl)}\\
@@ -654,10 +588,6 @@ Fortunately, \Agda{}'s internal coverage check, which is used to check totality 
 
 
 As seen in the subsection about coinduction, the interesting point of this technique is being able to reason about objects which are possibly infinite. Obviously, this raises a problem when trying to implement coinduction in proof assistants, as terms must always be finite. This question is normally addressed by resorting to lazy representations of elements of coinductive types. This means that the infinite terms are never represented in their entirety, but can be developed an arbitrary amount of times, when required by the user.
-
-% For instance, in the case of \textsc{Coq}, one can define the function $ natStream $ by the clause \[
-%   natStream~n = n :: (natStream~(n + 1))
-%   \,,\] but the term $ natStream~n $ will never reduce by itself to $ n :: (natStream~(n+1)) $, as this would be non-terminating. Rather, \textsc{Coq} imposes the condition that $ natStream~n $ will reduce only when being discriminated by a match.
 
 In the $ \lambda \Pi $-calculus modulo rewriting, it is clear that trying to define the function $ natStream $ naively by \[
   natStream~n \red n :: (natStream~(succ~n))
@@ -1798,10 +1728,6 @@ An additional aspect of universe polymorphism which is much harder to represent 
 
 
 
-% Suppose now we have a universe polymorphic type of natural numbers $ \N : (i : Level) \to Set_i$ and we would like to represent a function $ max\N : (i~j : Level) \to Set_{i \sqcup j} $ yielding the instance of $ \N $ with higher level. This would be represented by \[
-% \ctg{max\N} : \ctb{\forall}~(\lambda i : \ctb{L}. \ctb{set\omega})~(\lambda i : \ctb{L}. \ctb{\forall}~(\lambda j : \ctb{L}. \ctb{set}~(\ctb{s}~(i~\ctb{\sqcup}~j)))~(\lambda j : \ctb{L}. \ctb{set}~(i~\ctb{\sqcup}~j)))
-%   \,.\]
-
 \subsubsection{Eta-conversion}
 
 As we have already seen, computation in \Agda{} features eta-expansion, a rewrite rule which, different from most, is type-directed. This characteristic makes eta-expansion impossible to be directly expressed with our notion of rewrite rule. Indeed, in the $ \lambda \Pi $-calculus modulo rewriting a rewrite rule is a pair $ l \red r $ in which $ l $ is of the form $ c l_1...l_k $. We call this kind of rewriting untyped because matching is done purely syntactically, and we cannot inspect the types of the terms in order to know if a rewrite rule is applicable. In contrast, $ \eta $-expansion is defined by \[
@@ -2200,71 +2126,6 @@ Using this strategy we can translate functions such as $ \times $, and in this c
 
 
 
-% \section{(Co)induction principle from (co)algebra (finality) initiality}
-% \label{sec:label}
-
-% On section x we saw how the recursion and corecursion arise naturally when considering F-algebras, which allows us to justify recursive and corecursive functions. However, the induction and coinduction principles, needed for doing proofs, also arise in a similiar way. To see this, we consider once more the case of lists and streams.
-
-% A predicate on lists can also be seen as the subset $ P \subseteq List~\N$ of elements satisfying the given property. Suppose that $ P $ is closed by the constructors, that is, $ [] \in P $ and for $ n \in \N $, $ l \in P $ we have $ n~::~l \in P $. This means we have two functions $ [] : 1 \to P $ and $ (\_::\_) : \N \times P \to P$ given by $ [] : * \mapsto [] $ and $ (\_::\_) : (n, l) \mapsto n~::~l $. This can be represented categorically by the following diagrams, where $ [] : * \mapsto [] $, $ (\_::\_) : (n, l) \mapsto n~::~l $ and $ inc $ is the inclusion function.
-
-% \begin{center}
-% \begin{tabular}{ c c c }
-%  \begin{tikzcd}
-%   1 \arrow[r,  "*"] \arrow[d,"{[]}"] & 1 \arrow[d, "{[]}"] \\
-% P \arrow[r, "inc"] & List~\N
-% \end{tikzcd}
-%  & ~~~~ ~~~~~~~~~~~~&\begin{tikzcd}
-%   \N \times P \arrow[r,  "\N \times inc"] \arrow[d,"(\_::\_)"] & \N \times List~\N \arrow[d, "(\_::\_)"] \\
-% P \arrow[r, "inc"] & List~\N
-% \end{tikzcd}
-% \end{tabular}
-% \end{center}
-% By defining $ \alpha_P : 1 + \N \times P \to P$ by $ * \mapsto [] $ and $ (n, l) \mapsto n~::~l $, and noting that, by doing the same for $ List~\N $, we get the initial algebra, we deduce that $ inc $ is actually an F-algebra morphism, as shown by the following diagram.
-% \begin{center}
-% \begin{tikzcd}[column sep=huge]
-%   1+\N \times P \arrow[r,  "1 + \N \times inc"] \arrow[d,"\alpha_P"] & 1+\N \times List~\N \arrow[d, "\alpha_\N"] \\
-% P \arrow[r, "inc"] & List~\N
-% \end{tikzcd}
-% \end{center}
-
-% However, by initiality of $ List~\N $ we also have an F-algebra morphism $ f : List~\N \to P $, which by post-composition with $ inc $ gives an F-algebra endomorphism of $ List~\N $. But by initiality of $ List~\N $, there is exactly one such morphism, which is thus the identity, giving $ inc \circ f = id_{List~\N} $. As $ inc $ is an injection, then this can only be possible with $ P = List~\N $. This justifies the induction principle for lists, which we write by the following rule.
-
-% \begin{center}
-%   \AxiomC{$ P \subseteq List~\N $}
-%   \AxiomC{$[] \in P$}
-%   \AxiomC{$\forall (n : \N)~(l : List~\N). l \in P \Rightarrow P(n~::~l)\in P$}  
-% \TrinaryInfC{$P = List~\N $}
-% \DisplayProof
-% \end{center}
-
-% \[
-% \textbf{Ind}_{List~\N} : \Pi P : List~\N \to Prop. P~[] \to (\Pi (n : \N)~(l : List~\N). P~l \to P~(n~::~l)) \to \Pi l : List~\N. P~l
-%   \,.\]
-
-% By applying the dual argument we can also derive the coinduction principle for streams. Suppose that we have $ Stream~\N \subseteq P  $ such that for all $ l \in P $ either $ l = [] $ or $ l = n~::~l' $ with $ n \in \N $ and $ l' \in P $. This allows us to define a function $ \beta_P : P \to 1 + \N \times P $ which decomposes an element of $ P $ through a constructor, that is, $ \beta_P : [] \mapsto * $ and $ \beta_P : n~::~l \mapsto (n,l) $.
-
-% \begin{center}
-% \begin{tikzcd}[column sep=huge]
-%   Stream~\N\arrow[d,"\alpha_P"]\arrow[r,  "inc"] &P    \arrow[d, "\alpha_\N"]\\
-% 1+\N \times Stream~\N\arrow[r, "1 + \N \times inc"]    &  1+\N \times P 
-% \end{tikzcd}
-% \end{center}
-
-% Let $ f : P \to Stream~\N $. Then $ f \circ inc = id_{Stream~\N} $
-
-
-% \begin{center}
-%   \AxiomC{$Stream~\N \subseteq P   $}
-%   \AxiomC{$l \in P \Rightarrow l = [] \lor (l = n~::~l' \text{ with } l' \in P)$}
-% \BinaryInfC{$P = Stream~\N$}
-% \DisplayProof
-% \end{center}
-% \[
-%   \textbf{CoInd}_{Stream~\N} : \Pi P : Stream~\N \to Prop. (\Pi l : Stream~\N. P~l \to (empty~l + P~(tl~l))) \to \Pi l : Stream~\N \to P~l
-% \]
-
-
-%Note that by considering $ \textbf{Set}^{op} $ instead of $ \textbf{Set} $ the category of F-coalgebras becomes the one of F-algebras. 
 
 
 
